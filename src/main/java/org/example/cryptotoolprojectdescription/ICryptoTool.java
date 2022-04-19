@@ -1,6 +1,10 @@
 package org.example.cryptotoolprojectdescription;
 
+import com.google.common.base.Splitter;
 import lombok.NonNull;
+import org.bitcoinj.crypto.MnemonicCode;
+import org.bitcoinj.crypto.MnemonicException;
+import org.bitcoinj.wallet.DeterministicSeed;
 import org.example.cryptotoolprojectdescription.classes.TXReceiver;
 import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
@@ -23,6 +27,7 @@ import org.web3j.utils.Numeric;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,15 +36,31 @@ public abstract class ICryptoTool {
     /**
      * Generate valid mnemonic (seed) (accrodring to given attributes)
      *
-     * @param listOfAllWords dictionary which will be used to generate the mnemonic
      * @param length for example 12
      * @return mnemonic
      * @throws CryptoException if something goes wrong
      */
-    public abstract String generateMnemonic(
-            @NonNull List<String> listOfAllWords,
+    public static String generateMnemonic(
             @NonNull Integer length
-    ) throws CryptoException;
+    ) throws CryptoException {
+        // check word length
+        if (length < 12 || length > 24 || length % 3 > 0)
+            throw new CryptoException("Invalid word length: it must be between 12 and 24, and multiple of 3");
+
+        int checkSumLen = length / 3;
+        int entropyLen = length * 11 - checkSumLen;
+
+        // Generate deterministic seed
+        DeterministicSeed seed = new DeterministicSeed(new SecureRandom(), entropyLen, "");
+
+        // Get mnemonic from seed
+        List<String> words = seed.getMnemonicCode();
+
+        // Concat word list
+        String mnemonic = String.join(" ", words);
+
+        return mnemonic;
+    }
 
     /**
      * validate if mnemonic (seed) is ok (accrodring to given attributes)
@@ -48,9 +69,21 @@ public abstract class ICryptoTool {
      * @return true if mnemonic is ok, otherwise false
      * @throws CryptoException
      */
-    public abstract boolean isMnemonicValid(
+    public static boolean isMnemonicValid(
             @NonNull String mnemonic
-    ) throws CryptoException;
+    ) throws CryptoException {
+        // Split mnemonic string by space
+        List<String> words = Splitter.on(' ').splitToList(mnemonic);
+
+        // check by MnemonicCode class of BitcoinJ
+        try {
+            MnemonicCode.INSTANCE.check(words);
+            return true;
+        } catch (MnemonicException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     /**
      * Generate xpub (accrodring to given attributes) for relevant network and nettype from given mnemonic
