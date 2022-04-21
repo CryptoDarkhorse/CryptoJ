@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.example.cryptotoolprojectdescription.enums.NetType.*;
+
 import static lombok.AccessLevel.PRIVATE;
-import static org.example.cryptotoolprojectdescription.enums.NetType.MAINNET;
-import static org.example.cryptotoolprojectdescription.enums.NetType.TESTNET;
 
 @Getter
 @FieldDefaults(level = PRIVATE)
@@ -25,7 +25,7 @@ public enum Currency {
             18,
             Network.ETHEREUM,
             new BigDecimal("0.000000000000000001"),
-            Set.of(TESTNET),
+            Set.of(ETHEREUM),
             TokenType.ERC20,
             "0x9b8b16c5868a41eb9bb033dd271b3c68719f84a7",
             new BigDecimal("20")
@@ -37,7 +37,7 @@ public enum Currency {
             8,
             Network.BITCOIN,
             new BigDecimal("0.00000001"),
-            Set.of(MAINNET, TESTNET),
+            Set.of(BITCOIN, BITCOIN_REGTEST, BITCOIN_REGTEST),
             null,
             null,
             null
@@ -49,7 +49,7 @@ public enum Currency {
             18,
             Network.ETHEREUM,
             new BigDecimal("0.000000000000000001"),
-            Set.of(MAINNET, TESTNET),
+            Set.of(ETHEREUM),
             null,
             null,
             null
@@ -61,7 +61,7 @@ public enum Currency {
             8,
             Network.LITECOIN,
             new BigDecimal("0.00000001"),
-            Set.of(MAINNET, TESTNET),
+            Set.of(LITECOIN, LITECOIN_TESTNET),
             null,
             null,
             null
@@ -73,7 +73,7 @@ public enum Currency {
             6,
             Network.ETHEREUM,
             new BigDecimal("0.000001"),
-            Set.of(MAINNET),
+            Set.of(ETHEREUM),
             TokenType.ERC20,
             "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
             new BigDecimal("20")
@@ -85,7 +85,7 @@ public enum Currency {
             6,
             Network.ETHEREUM,
             new BigDecimal("0.000001"),
-            Set.of(MAINNET),
+            Set.of(ETHEREUM),
             TokenType.ERC20,
             "0xdac17f958d2ee523a2206206994597c13d831ec7",
             new BigDecimal("20")

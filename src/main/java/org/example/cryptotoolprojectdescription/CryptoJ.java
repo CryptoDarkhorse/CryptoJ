@@ -2,9 +2,13 @@ package org.example.cryptotoolprojectdescription;
 
 import com.google.common.base.Splitter;
 import lombok.NonNull;
-import org.bitcoinj.crypto.MnemonicCode;
-import org.bitcoinj.crypto.MnemonicException;
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.crypto.*;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
+import org.bitcoinj.wallet.UnreadableWalletException;
 import org.example.cryptotoolprojectdescription.classes.TXReceiver;
 import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
@@ -12,17 +16,11 @@ import org.example.cryptotoolprojectdescription.enums.Currency;
 import org.example.cryptotoolprojectdescription.enums.NetType;
 import org.example.cryptotoolprojectdescription.enums.Network;
 import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
-import org.web3j.abi.FunctionEncoder;
-import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.Bool;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.generated.Uint256;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.RawTransaction;
-import org.web3j.crypto.TransactionEncoder;
-import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.utils.Numeric;
+import org.example.cryptotoolprojectdescription.network.IWrappedNetParams;
+import org.example.cryptotoolprojectdescription.network.WrappedMainNetParams;
+import org.example.cryptotoolprojectdescription.network.WrappedTestNetParams;
+import org.jetbrains.annotations.NotNull;
+import org.web3j.crypto.Keys;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,7 +29,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class ICryptoTool {
+public class CryptoJ {
 
     /**
      * Generate valid mnemonic (seed) (accrodring to given attributes)
@@ -85,20 +83,99 @@ public abstract class ICryptoTool {
         }
     }
 
+    private static NetworkParameters getNetworkParams(Network network, NetType netType) {
+        IWrappedNetParams wrappedParams = null;
+        NetworkParameters params = null;
+
+        if (netType.isMainNet()) {
+            params = WrappedMainNetParams.get();
+            wrappedParams = WrappedMainNetParams.get();
+        } else {
+            params = WrappedTestNetParams.get();
+            wrappedParams = WrappedTestNetParams.get();
+        }
+
+        wrappedParams.setBIP32Headers(
+                netType.getBech32(),
+                netType.getPubKeyHash(),
+                netType.getScriptHash(),
+                netType.getWif(),
+                netType.getP2pkhPub(),
+                netType.getP2pkhPriv(),
+                netType.getP2wpkhPub(),
+                netType.getP2wpkhPriv()
+        );
+
+        return params;
+    }
+
     /**
-     * Generate xpub (accrodring to given attributes) for relevant network and nettype from given mnemonic
-     *
+     * Generate extended public key for relevant network, nettype, and address type from given mnemonic
      * @param network
      * @param netType
+     * @param addrType
      * @param mnemonic
-     * @return
+     * @return extened public key
      * @throws CryptoException
+     *
+     * Note: Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
+     *       However, this is only difference of notation, and results are same.
+     *       And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
+     *       which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
      */
-    public abstract String generateXPub(
+    public static String generateXPub(
             @NonNull Network network,
             @NonNull NetType netType,
+            @NotNull AddressType addrType,
             @NonNull String mnemonic
-    ) throws CryptoException;
+    ) throws CryptoException {
+        if (addrType.getPurpose() < 0) {
+            throw new CryptoException("P2SH does not support HD wallet");
+        }
+
+        DeterministicSeed seed;
+        try {
+            seed = new DeterministicSeed(mnemonic, null, "", 0);
+        } catch (UnreadableWalletException e) {
+            throw new CryptoException("Invalid mnemonic");
+        }
+
+        /**
+         * Build HD path
+         * Ref: BIP 44 - https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
+         */
+        HDPath path = HDPath.m();
+
+        // extend purpose - current path is m/purpose'
+        path = path.extend(new ChildNumber(addrType.getPurpose(), true)); // /purpose'
+
+        // extend coin type - current path is m/purpose'/coin_type'
+        if (netType.isMainNet()) {
+            path = path.extend(new ChildNumber(netType.getCoinType(), true));
+        } else {
+            // purpose value of testnet is 1 for all coin types
+            path = path.extend(new ChildNumber(1, true));
+        }
+
+        // extend account & change - m/purpose'/coin_type'/account'/change
+        path = path.extend(new ChildNumber(0, true));
+        path = path.extend(new ChildNumber(0, false));
+
+        DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
+
+        DeterministicKey key = chain.getKeyByPath(path, true);
+
+        NetworkParameters params = getNetworkParams(network, netType);
+
+        String encodedKey = "";
+        if (addrType.equals(AddressType.P2PKH_LEGACY)) {
+            encodedKey = key.serializePubB58(params, Script.ScriptType.P2PKH);
+        } else {
+            encodedKey = key.serializePubB58(params, Script.ScriptType.P2WPKH);
+        }
+
+        return encodedKey;
+    }
 
     /**
      * Check if xpub is valid (accrodring to given attributes)
@@ -109,47 +186,22 @@ public abstract class ICryptoTool {
      * @return
      * @throws CryptoException
      */
-    public abstract boolean isXPubValid(
+    public static boolean isXPubValid(
             @NonNull Network network,
             @NonNull NetType netType,
+            @NotNull AddressType addrType,
             @NonNull String xPub
-    ) throws CryptoException;
+    ) throws CryptoException {
+        NetworkParameters params = getNetworkParams(network, netType);
 
-    /**
-     * generate address (accrodring to given attributes) to receive coins
-     *
-     * @param network
-     * @param netType
-     * @param xPub
-     * @param derivationIndex
-     * @param addressType
-     * @return
-     * @throws CryptoException
-     */
-    public abstract String generateAddress(
-            @NonNull Network network,
-            @NonNull NetType netType,
-            @NonNull String xPub,
-            @NonNull Long derivationIndex,
-            AddressType addressType
-    ) throws CryptoException;
-
-    /**
-     * validate if address is valid (accrodring to given attributes) and contains no errors mis-typos etc
-     *
-     * @param network
-     * @param netType
-     * @param address
-     * @param addressType
-     * @return
-     * @throws CryptoException
-     */
-    public abstract boolean isAddressValid(
-            @NonNull Network network,
-            @NonNull NetType netType,
-            @NonNull String address,
-            AddressType addressType
-    ) throws CryptoException;
+        try {
+            DeterministicKey key = DeterministicKey.deserializeB58(xPub, params);
+            if (key.isPubKeyOnly()) return true;
+            return false; // extended private key
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
 
     /**
      * generate private key
@@ -161,12 +213,67 @@ public abstract class ICryptoTool {
      * @return
      * @throws CryptoException
      */
-    public abstract String generatePrivKey(
+    public static String generatePrivKey(
             @NonNull Network network,
             @NonNull NetType netType,
+            @NonNull AddressType addrType,
             @NonNull String mnemonic,
-            @NonNull Long derivationIndex
-    ) throws CryptoException;
+            @NonNull int derivationIndex
+    ) throws CryptoException {
+        if (addrType.getPurpose() < 0) {
+            throw new CryptoException("P2SH does not support HD wallet");
+        }
+
+        DeterministicSeed seed;
+        try {
+            seed = new DeterministicSeed(mnemonic, null, "", 0);
+        } catch (UnreadableWalletException e) {
+            throw new CryptoException("Invalid mnemonic");
+        }
+
+        /**
+         * Build HD path
+         * Ref: BIP 44 - https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
+         */
+        HDPath path = HDPath.m();
+
+        // extend purpose - current path is m/purpose'
+        path = path.extend(new ChildNumber(addrType.getPurpose(), true)); // /purpose'
+
+        // extend coin type - current path is m/purpose'/coin_type'
+        if (netType.isMainNet()) {
+            path = path.extend(new ChildNumber(netType.getCoinType(), true));
+        } else {
+            // purpose value of testnet is 1 for all coin types
+            path = path.extend(new ChildNumber(1, true));
+        }
+
+        // extend account & change - m/purpose'/coin_type'/account'/change
+        path = path.extend(new ChildNumber(0, true));
+        path = path.extend(new ChildNumber(0, false));
+
+        // extend derivation index
+        path = path.extend(new ChildNumber(derivationIndex, false));
+
+        DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
+
+        DeterministicKey key = chain.getKeyByPath(path, true);
+        NetworkParameters params = getNetworkParams(network, netType);
+
+        String encodedKey = "";
+        switch (network) {
+            case BITCOIN:
+            case LITECOIN:
+                encodedKey = key.getPrivateKeyAsWiF(params);
+                break;
+            case ETHEREUM:
+                encodedKey = "0x" + key.getPrivateKeyAsHex();
+                break;
+            default:
+                throw new CryptoException("Unsupported network");
+        }
+        return encodedKey;
+    }
 
     /**
      * validate privatekey (accrodring to given attributes)
@@ -177,11 +284,95 @@ public abstract class ICryptoTool {
      * @return
      * @throws CryptoException
      */
-    public abstract boolean isPrivKeyValid(
+    public boolean isPrivKeyValid(
             @NonNull Network network,
             @NonNull NetType netType,
             @NonNull String privKey
-    ) throws CryptoException;
+    ) throws CryptoException {
+        throw new CryptoException("Not Implemented");
+    }
+
+    /**
+     * generate address (accrodring to given attributes) to receive coins
+     *
+     * @param network
+     * @param netType
+     * @param xPub
+     * @param derivationIndex
+     * @return
+     * @throws CryptoException
+     */
+    public static String generateAddress(
+            @NonNull Network network,
+            @NonNull NetType netType,
+            @NonNull AddressType addrType,
+            @NonNull String xPub,
+            @NonNull int derivationIndex
+    ) throws CryptoException {
+        if (!isXPubValid(network, netType, addrType, xPub)) {
+            throw new CryptoException("Invalid xpub");
+        }
+
+        NetworkParameters params = getNetworkParams(network, netType);
+
+        DeterministicKey xpubKey = DeterministicKey.deserializeB58(xPub, params);
+
+        DeterministicKey key = HDKeyDerivation.deriveChildKey(xpubKey, new ChildNumber(derivationIndex, false));
+
+        Script.ScriptType scryptType = Script.ScriptType.P2PKH;
+
+        switch (addrType) {
+            case P2PKH_LEGACY:
+                scryptType = Script.ScriptType.P2PKH;
+                break;
+            case P2WPKH_NATIVE_SEGWIT:
+            case P2TR_TAPROOT:
+                scryptType = Script.ScriptType.P2WPKH;
+                break;
+            case P2SH_PAY_TO_SCRIPT_HASH:
+                throw new CryptoException("P2SH does not support HD wallet");
+            default:
+                throw new CryptoException("Unsupported address type");
+        }
+
+        Address address = Address.fromKey(params, key, scryptType);
+
+        String encodedAddress = "";
+        switch (network) {
+            case ETHEREUM:
+                if (addrType == AddressType.P2PKH_LEGACY) {
+                    byte[] encoded = key.getPubKeyPoint().getEncoded(false);
+                    BigInteger publicKey = new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
+                    return Keys.toChecksumAddress(Keys.getAddress(publicKey));
+                }
+            case BITCOIN:
+            case LITECOIN:
+                encodedAddress = address.toString();
+                break;
+            default:
+                throw new CryptoException("Unsupported network");
+        }
+        return encodedAddress;
+    }
+
+    /**
+     * validate if address is valid (accrodring to given attributes) and contains no errors mis-typos etc
+     *
+     * @param network
+     * @param netType
+     * @param address
+     * @param addressType
+     * @return
+     * @throws CryptoException
+     */
+    public boolean isAddressValid(
+            @NonNull Network network,
+            @NonNull NetType netType,
+            @NonNull String address,
+            AddressType addressType
+    ) throws CryptoException {
+        throw new CryptoException("Not Implemented");
+    }
 
     /**
      * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
@@ -193,12 +384,14 @@ public abstract class ICryptoTool {
      * @return
      * @throws CryptoException
      */
-    public abstract String signBTCLTCBasedTransaction(
+    public String signBTCLTCBasedTransaction(
             @NonNull Network network,
             @NonNull NetType netType,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
-    ) throws CryptoException;
+    ) throws CryptoException {
+        throw new CryptoException("Not Implemented");
+    }
 
     // IMPLEMENTED METHODS //
 
@@ -300,7 +493,7 @@ public abstract class ICryptoTool {
                 nonce,
                 gasPriceInETHWei,
                 gasLimitInUnits,
-                netType == NetType.TESTNET
+                !netType.isMainNet()
         );
     }
 
@@ -314,6 +507,7 @@ public abstract class ICryptoTool {
             @NonNull BigInteger gasLimit,
             @NonNull Boolean testnet
     ) {
+        /*
         BigInteger value = amount.divide(currency.getMinValue()).toBigInteger();
         Long chainId = testnet ? 3L : 1L;
         Credentials credentials = Credentials.create(fromPrivateKey);
@@ -350,6 +544,8 @@ public abstract class ICryptoTool {
         }
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
+        */
+        return "";
     }
 
 }

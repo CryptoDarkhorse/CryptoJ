@@ -10,8 +10,8 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public enum Network {
 
-    BITCOIN("BITCOIN", "Bitcoin"),
-    ETHEREUM("ETHEREUM", "Ethereum"),
+    BITCOIN("BITCOIN","Bitcoin"),
+    ETHEREUM("ETHEREUM","Ethereum"),
     LITECOIN("LITECOIN", "Litecoin");
 
     final String code;
