@@ -247,8 +247,77 @@ public class TestMain {
             assertEquals(address, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95");
             assertEquals(prvKey, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45");
         } catch (CryptoException e) {
-            e.printStackTrace();
+            assertTrue(false, "Unexpected exception");
         }
+    }
 
+    @Test
+    @DisplayName("Test private key validity")
+    void testPrivateKey() {
+        try {
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC"));
+
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN_TESTNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN_TESTNET, "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"));
+
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN_REGTEST, "cQiQ1qtkzRc83ES9zn7sAJuL7LQki6qwjCsmpKX49Y63wrQyctkR"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN_REGTEST, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp"));
+
+            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM, NetType.ETHEREUM, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM, NetType.ETHEREUM, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf"));
+
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, NetType.LITECOIN, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, NetType.LITECOIN, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy"));
+
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, NetType.LITECOIN_TESTNET, "cVdsBsrPLZsEtLxh8TQfjmdaSXDG3632zuHYBNDRDYbSvwQxwApi"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, NetType.LITECOIN_TESTNET, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45"));
+
+            // invalid key - containing invalid character
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN, "L3zJJbXrwr7Gk5Jbp7IcqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+            // invalid key - checksum validation failed
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN, "Kx7rDkP5ESZnhXVjBSUsRP3ChNw3VArUV2QMBuiZkNW7cqJqReC"));
+            // invalid key - invalid network
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, NetType.BITCOIN, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
+
+            // TODO: ... add some test cases
+        } catch (CryptoException e) {
+            assertTrue(false, "Unexpected exception");
+        }
+    }
+
+    @Test
+    @DisplayName("Test address validity")
+    void testAddress() {
+        try {
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd"));
+
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN_TESTNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN_TESTNET, "tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln"));
+
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN_REGTEST, "n31cruGhMj8gFJWjUNk2HdNjqw3gCSABPa"));
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN_REGTEST, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf"));
+
+            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM, NetType.ETHEREUM, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB"));
+            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM, NetType.ETHEREUM, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7"));
+
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, NetType.LITECOIN, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8"));
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, NetType.LITECOIN, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
+
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, NetType.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, NetType.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95"));
+
+            // invalid key - containing invalid character - I
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+            // invalid key - checksum validation failed - some characters removed
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN, "bc1qqkhc9mjkw0rr6n5xechhnvldnd8g7nc3smd"));
+            // invalid key - invalid network - address should be TESTNET
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, NetType.BITCOIN, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
+
+            // TODO: ... add some test cases
+        } catch (CryptoException e) {
+            assertTrue(false, "Unexpected exception");
+        }
     }
 }

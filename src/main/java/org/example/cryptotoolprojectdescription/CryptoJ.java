@@ -2,8 +2,7 @@ package org.example.cryptotoolprojectdescription;
 
 import com.google.common.base.Splitter;
 import lombok.NonNull;
-import org.bitcoinj.core.Address;
-import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.wallet.DeterministicKeyChain;
@@ -28,6 +27,7 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class CryptoJ {
 
@@ -237,10 +237,10 @@ public class CryptoJ {
          */
         HDPath path = HDPath.m();
 
-        // extend purpose - current path is m/purpose'
-        path = path.extend(new ChildNumber(addrType.getPurpose(), true)); // /purpose'
+        // extend purpose - m/purpose'
+        path = path.extend(new ChildNumber(addrType.getPurpose(), true));
 
-        // extend coin type - current path is m/purpose'/coin_type'
+        // extend coin type - m/purpose'/coin_type'
         if (netType.isMainNet()) {
             path = path.extend(new ChildNumber(netType.getCoinType(), true));
         } else {
@@ -284,12 +284,35 @@ public class CryptoJ {
      * @return
      * @throws CryptoException
      */
-    public boolean isPrivKeyValid(
+    public static boolean isPrivKeyValid(
             @NonNull Network network,
             @NonNull NetType netType,
             @NonNull String privKey
     ) throws CryptoException {
-        throw new CryptoException("Not Implemented");
+        NetworkParameters params = getNetworkParams(network, netType);
+
+        if (network == Network.ETHEREUM) {
+            privKey = privKey.toLowerCase();
+            if (!privKey.startsWith("0x")) return false;
+
+            try {
+                byte[] privKeyBytes = Utils.HEX.decode(privKey.substring(2));
+                ECKey.fromPrivate(privKeyBytes);
+                return true;
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        }
+
+        try {
+            DumpedPrivateKey.fromBase58(params, privKey);
+            return true;
+        } catch (AddressFormatException ex) {
+            ex.printStackTrace();
+            System.err.println();
+            return false;
+        }
     }
 
     /**
@@ -361,17 +384,29 @@ public class CryptoJ {
      * @param network
      * @param netType
      * @param address
-     * @param addressType
      * @return
      * @throws CryptoException
      */
-    public boolean isAddressValid(
+    public static boolean isAddressValid(
             @NonNull Network network,
             @NonNull NetType netType,
-            @NonNull String address,
-            AddressType addressType
+            @NonNull String address
     ) throws CryptoException {
-        throw new CryptoException("Not Implemented");
+        NetworkParameters params = getNetworkParams(network, netType);
+
+        if (network == Network.ETHEREUM && address.startsWith("0x")) {
+            // ethereum legacy address
+            return Utils.HEX.canDecode(address.toLowerCase().substring(2)) && // only hexadecimal characters
+                    address.length() == 42; // 20bytes + "0x" = 42 characters
+        }
+
+        try {
+            Address.fromString(params, address);
+            return true;
+        } catch (AddressFormatException ex) {
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -420,7 +455,7 @@ public class CryptoJ {
         }
         for (TXReceiver txReceiver : txReceivers) {
             txReceiver.setAddress(txReceiver.getAddress().replace(" ", ""));
-            if (isAddressValid(network, netType, txReceiver.getAddress(), null) == false) {
+            if (isAddressValid(network, netType, txReceiver.getAddress()) == false) {
                 throw new CryptoException("Receiver's address " + txReceiver.getAddress() + " is invalid.");
             }
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
@@ -463,7 +498,7 @@ public class CryptoJ {
             throw new CryptoException("Private key is invalid.");
         }
         toAddress = toAddress.replace(" ", "");
-        if (isAddressValid(network, netType, toAddress, null) == false) {
+        if (isAddressValid(network, netType, toAddress) == false) {
             throw new CryptoException("To address is invalid.");
         }
         amount = amount.stripTrailingZeros();
