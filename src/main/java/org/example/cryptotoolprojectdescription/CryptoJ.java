@@ -5,6 +5,7 @@ import lombok.NonNull;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.UnreadableWalletException;
@@ -19,7 +20,16 @@ import org.example.cryptotoolprojectdescription.network.IWrappedNetParams;
 import org.example.cryptotoolprojectdescription.network.WrappedMainNetParams;
 import org.example.cryptotoolprojectdescription.network.WrappedTestNetParams;
 import org.jetbrains.annotations.NotNull;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Bool;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Keys;
+import org.web3j.crypto.RawTransaction;
+import org.web3j.crypto.TransactionEncoder;
+import org.web3j.utils.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -82,7 +92,7 @@ public class CryptoJ {
         }
     }
 
-    private static NetworkParameters getNetworkParams(Network network) {
+    public static NetworkParameters getNetworkParams(Network network) {
         IWrappedNetParams wrappedParams = null;
         NetworkParameters params = null;
 
@@ -405,12 +415,42 @@ public class CryptoJ {
      * @return
      * @throws CryptoException
      */
-    public String signBTCLTCBasedTransaction(
+    public static String signBTCLTCBasedTransaction(
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
     ) throws CryptoException {
-        throw new CryptoException("Not Implemented");
+        NetworkParameters params = getNetworkParams(network);
+
+        // Init transaction
+        Transaction trans = new Transaction(params);
+        trans.setVersion(2);
+        // Add inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
+            Script script = ScriptBuilder.createP2PKHOutputScript(key);
+            byte[] message = Utils.HEX.decode(utxo.getTxHash());
+            TransactionInput input = trans.addInput(Sha256Hash.wrap(message), utxo.getIndex(), script);
+            Address ownerAddr = Address.fromKey(params, key, Script.ScriptType.P2PKH); // TODO: change script type using UTXO's ref
+            Script scriptPubkey = ScriptBuilder.createOutputScript(ownerAddr);
+            TransactionSignature txSignature = trans.calculateSignature(i, key, scriptPubkey, Transaction.SigHash.ALL, false);
+            input.setScriptSig(ScriptBuilder.createInputScript(txSignature, key));
+        }
+
+        // Add output
+        for (int i = 0; i < txReceivers.length; i++) {
+            TXReceiver receiver = txReceivers[i];
+            Address addr = Address.fromString(params, receiver.getAddress());
+            Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
+            trans.addOutput(Coin.valueOf(receiver.getAmount().longValue()), scriptPubKey);
+        }
+
+        trans.verify();
+        trans.getConfidence().setSource(TransactionConfidence.Source.SELF);
+        trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
+
+        return Utils.HEX.encode(trans.bitcoinSerialize());
     }
 
     // IMPLEMENTED METHODS //
@@ -526,7 +566,6 @@ public class CryptoJ {
             @NonNull BigInteger gasLimit,
             @NonNull Boolean testnet
     ) {
-        /*
         BigInteger value = amount.divide(currency.getMinValue()).toBigInteger();
         Long chainId = testnet ? 3L : 1L;
         Credentials credentials = Credentials.create(fromPrivateKey);
@@ -540,10 +579,10 @@ public class CryptoJ {
                     value
             );
         } else {
-            Function function = new Function("transfer", Arrays.asList(new Address(toAddress), new Uint256(value)), Arrays.asList(new TypeReference<Bool>() {
+            Function function = new Function("transfer", Arrays.asList(new org.web3j.abi.datatypes.Address(toAddress), new Uint256(value)), Arrays.asList(new TypeReference<Bool>() {
             }));
             String txData = FunctionEncoder.encode(function);
-            Transaction prepareTx = new Transaction(
+            org.web3j.protocol.core.methods.request.Transaction prepareTx = new org.web3j.protocol.core.methods.request.Transaction(
                     credentials.getAddress(),
                     nonce,
                     gasPrice,
@@ -563,8 +602,6 @@ public class CryptoJ {
         }
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
-        */
-        return "";
     }
 
 }
