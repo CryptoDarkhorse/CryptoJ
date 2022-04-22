@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.example.cryptotoolprojectdescription.enums.NetType.*;
+import static org.example.cryptotoolprojectdescription.enums.Network.*;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -23,7 +23,7 @@ public enum Currency {
             "AA1Token",
             "AA1",
             18,
-            Network.ETHEREUM,
+            CoinType.ETH,
             new BigDecimal("0.000000000000000001"),
             Set.of(ETHEREUM),
             TokenType.ERC20,
@@ -35,7 +35,7 @@ public enum Currency {
             "Bitcoin",
             "BTC",
             8,
-            Network.BITCOIN,
+            CoinType.BTC,
             new BigDecimal("0.00000001"),
             Set.of(BITCOIN, BITCOIN_REGTEST, BITCOIN_REGTEST),
             null,
@@ -47,7 +47,7 @@ public enum Currency {
             "Ethereum",
             "ETH",
             18,
-            Network.ETHEREUM,
+            CoinType.ETH,
             new BigDecimal("0.000000000000000001"),
             Set.of(ETHEREUM),
             null,
@@ -59,7 +59,7 @@ public enum Currency {
             "Litecoin",
             "LTC",
             8,
-            Network.LITECOIN,
+            CoinType.LTC,
             new BigDecimal("0.00000001"),
             Set.of(LITECOIN, LITECOIN_TESTNET),
             null,
@@ -71,7 +71,7 @@ public enum Currency {
             "USD Coin",
             "USDC",
             6,
-            Network.ETHEREUM,
+            CoinType.ETH,
             new BigDecimal("0.000001"),
             Set.of(ETHEREUM),
             TokenType.ERC20,
@@ -83,7 +83,7 @@ public enum Currency {
             "USD Tether",
             "USDT",
             6,
-            Network.ETHEREUM,
+            CoinType.ETH,
             new BigDecimal("0.000001"),
             Set.of(ETHEREUM),
             TokenType.ERC20,
@@ -95,10 +95,10 @@ public enum Currency {
     final String name;
     final String iso;
     final Integer scale;
-    final Network network;
+    final CoinType coinType;
     final BigDecimal minValue;
     final TokenType tokenType;
-    final Set<NetType> netTypes;
+    final Set<Network> networks;
     final String smartContractAddress;
     final BigDecimal minAmountForGrabber;
 
@@ -107,9 +107,9 @@ public enum Currency {
             final @NonNull String name,
             final @NonNull String iso,
             final @NonNull Integer scale,
-            final @NonNull Network network,
+            final @NonNull CoinType coinType,
             final @NonNull BigDecimal minValue,
-            final @NonNull Set<NetType> netTypes,
+            final @NonNull Set<Network> networks,
             final TokenType tokenType,
             final String smartContractAddress,
             final BigDecimal minAmountForGrabber
@@ -118,43 +118,43 @@ public enum Currency {
         this.name = name;
         this.iso = iso;
         this.scale = scale;
-        this.network = network;
+        this.coinType = coinType;
         this.minValue = minValue.setScale(scale, RoundingMode.DOWN);
-        this.netTypes = netTypes;
+        this.networks = networks;
         this.tokenType = tokenType;
         this.smartContractAddress = smartContractAddress.replace(" ", "");
         this.minAmountForGrabber = minAmountForGrabber;
     }
 
-    public static Set<Currency> values(NetType netType, Network network) {
-        if (netType == null && network == null) {
+    public static Set<Currency> values(Network network, CoinType coinType) {
+        if (network == null && coinType == null) {
             return Arrays.stream(Currency.values()).collect(Collectors.toSet());
         }
-        if (netType == null && network != null) {
+        if (network == null && coinType != null) {
             return Arrays
                     .stream(Currency.values())
-                    .filter(item -> item.getNetwork() == network)
+                    .filter(item -> item.getCoinType() == coinType)
                     .collect(Collectors.toSet());
         }
-        if (netType != null && network == null) {
+        if (network != null && coinType == null) {
             return Arrays
                     .stream(Currency.values())
-                    .filter(item -> item.getNetTypes().contains(netType))
+                    .filter(item -> item.getNetworks().contains(network))
                     .collect(Collectors.toSet());
         }
-        if (netType != null && network != null) {
+        if (network != null && coinType != null) {
             return Arrays
                     .stream(Currency.values())
-                    .filter(item -> item.getNetTypes().contains(netType) && item.getNetwork() == network)
+                    .filter(item -> item.getNetworks().contains(network) && item.getCoinType() == coinType)
                     .collect(Collectors.toSet());
         }
         return null; // this will never happen
     }
 
-    public static Currency getCurrency(@NonNull String smartContractAddress, NetType netType, Network network) {
+    public static Currency getCurrency(@NonNull String smartContractAddress, Network network, CoinType coinType) {
         smartContractAddress = smartContractAddress.replace(" ", "");
         Currency result = null;
-        for (Currency currency : Currency.values(netType, network)) {
+        for (Currency currency : Currency.values(network, coinType)) {
             if (currency.getSmartContractAddress() != null) {
                 if (currency.getSmartContractAddress().equalsIgnoreCase(smartContractAddress)) {
                     return currency;

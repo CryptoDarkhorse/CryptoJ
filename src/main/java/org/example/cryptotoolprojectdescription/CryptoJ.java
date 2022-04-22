@@ -12,8 +12,8 @@ import org.example.cryptotoolprojectdescription.classes.TXReceiver;
 import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
 import org.example.cryptotoolprojectdescription.enums.Currency;
-import org.example.cryptotoolprojectdescription.enums.NetType;
 import org.example.cryptotoolprojectdescription.enums.Network;
+import org.example.cryptotoolprojectdescription.enums.CoinType;
 import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
 import org.example.cryptotoolprojectdescription.network.IWrappedNetParams;
 import org.example.cryptotoolprojectdescription.network.WrappedMainNetParams;
@@ -27,7 +27,6 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 public class CryptoJ {
 
@@ -83,11 +82,11 @@ public class CryptoJ {
         }
     }
 
-    private static NetworkParameters getNetworkParams(Network network, NetType netType) {
+    private static NetworkParameters getNetworkParams(Network network) {
         IWrappedNetParams wrappedParams = null;
         NetworkParameters params = null;
 
-        if (netType.isMainNet()) {
+        if (network.isMainNet()) {
             params = WrappedMainNetParams.get();
             wrappedParams = WrappedMainNetParams.get();
         } else {
@@ -96,14 +95,14 @@ public class CryptoJ {
         }
 
         wrappedParams.setBIP32Headers(
-                netType.getBech32(),
-                netType.getPubKeyHash(),
-                netType.getScriptHash(),
-                netType.getWif(),
-                netType.getP2pkhPub(),
-                netType.getP2pkhPriv(),
-                netType.getP2wpkhPub(),
-                netType.getP2wpkhPriv()
+                network.getBech32(),
+                network.getPubKeyHash(),
+                network.getScriptHash(),
+                network.getWif(),
+                network.getP2pkhPub(),
+                network.getP2pkhPriv(),
+                network.getP2wpkhPub(),
+                network.getP2wpkhPriv()
         );
 
         return params;
@@ -112,7 +111,6 @@ public class CryptoJ {
     /**
      * Generate extended public key for relevant network, nettype, and address type from given mnemonic
      * @param network
-     * @param netType
      * @param addrType
      * @param mnemonic
      * @return extened public key
@@ -125,7 +123,6 @@ public class CryptoJ {
      */
     public static String generateXPub(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NotNull AddressType addrType,
             @NonNull String mnemonic
     ) throws CryptoException {
@@ -150,8 +147,8 @@ public class CryptoJ {
         path = path.extend(new ChildNumber(addrType.getPurpose(), true)); // /purpose'
 
         // extend coin type - current path is m/purpose'/coin_type'
-        if (netType.isMainNet()) {
-            path = path.extend(new ChildNumber(netType.getCoinType(), true));
+        if (network.isMainNet()) {
+            path = path.extend(new ChildNumber(network.getCoinId(), true));
         } else {
             // purpose value of testnet is 1 for all coin types
             path = path.extend(new ChildNumber(1, true));
@@ -165,7 +162,7 @@ public class CryptoJ {
 
         DeterministicKey key = chain.getKeyByPath(path, true);
 
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
         String encodedKey = "";
         if (addrType.equals(AddressType.P2PKH_LEGACY)) {
@@ -181,18 +178,16 @@ public class CryptoJ {
      * Check if xpub is valid (accrodring to given attributes)
      *
      * @param network
-     * @param netType
      * @param xPub
      * @return
      * @throws CryptoException
      */
     public static boolean isXPubValid(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NotNull AddressType addrType,
             @NonNull String xPub
     ) throws CryptoException {
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
         try {
             DeterministicKey key = DeterministicKey.deserializeB58(xPub, params);
@@ -207,7 +202,6 @@ public class CryptoJ {
      * generate private key
      *
      * @param network
-     * @param netType
      * @param mnemonic
      * @param derivationIndex
      * @return
@@ -215,7 +209,6 @@ public class CryptoJ {
      */
     public static String generatePrivKey(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NonNull AddressType addrType,
             @NonNull String mnemonic,
             @NonNull int derivationIndex
@@ -241,8 +234,8 @@ public class CryptoJ {
         path = path.extend(new ChildNumber(addrType.getPurpose(), true));
 
         // extend coin type - m/purpose'/coin_type'
-        if (netType.isMainNet()) {
-            path = path.extend(new ChildNumber(netType.getCoinType(), true));
+        if (network.isMainNet()) {
+            path = path.extend(new ChildNumber(network.getCoinId(), true));
         } else {
             // purpose value of testnet is 1 for all coin types
             path = path.extend(new ChildNumber(1, true));
@@ -258,15 +251,15 @@ public class CryptoJ {
         DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(seed).build();
 
         DeterministicKey key = chain.getKeyByPath(path, true);
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
         String encodedKey = "";
-        switch (network) {
-            case BITCOIN:
-            case LITECOIN:
+        switch (network.getCoinType()) {
+            case BTC:
+            case LTC:
                 encodedKey = key.getPrivateKeyAsWiF(params);
                 break;
-            case ETHEREUM:
+            case ETH:
                 encodedKey = "0x" + key.getPrivateKeyAsHex();
                 break;
             default:
@@ -279,19 +272,17 @@ public class CryptoJ {
      * validate privatekey (accrodring to given attributes)
      *
      * @param network
-     * @param netType
      * @param privKey
      * @return
      * @throws CryptoException
      */
     public static boolean isPrivKeyValid(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NonNull String privKey
     ) throws CryptoException {
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
-        if (network == Network.ETHEREUM) {
+        if (network.getCoinType() == CoinType.ETH) {
             privKey = privKey.toLowerCase();
             if (!privKey.startsWith("0x")) return false;
 
@@ -319,7 +310,6 @@ public class CryptoJ {
      * generate address (accrodring to given attributes) to receive coins
      *
      * @param network
-     * @param netType
      * @param xPub
      * @param derivationIndex
      * @return
@@ -327,16 +317,15 @@ public class CryptoJ {
      */
     public static String generateAddress(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NonNull AddressType addrType,
             @NonNull String xPub,
             @NonNull int derivationIndex
     ) throws CryptoException {
-        if (!isXPubValid(network, netType, addrType, xPub)) {
+        if (!isXPubValid(network, addrType, xPub)) {
             throw new CryptoException("Invalid xpub");
         }
 
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
         DeterministicKey xpubKey = DeterministicKey.deserializeB58(xPub, params);
 
@@ -361,15 +350,15 @@ public class CryptoJ {
         Address address = Address.fromKey(params, key, scryptType);
 
         String encodedAddress = "";
-        switch (network) {
-            case ETHEREUM:
+        switch (network.getCoinType()) {
+            case ETH:
                 if (addrType == AddressType.P2PKH_LEGACY) {
                     byte[] encoded = key.getPubKeyPoint().getEncoded(false);
                     BigInteger publicKey = new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
                     return Keys.toChecksumAddress(Keys.getAddress(publicKey));
                 }
-            case BITCOIN:
-            case LITECOIN:
+            case BTC:
+            case LTC:
                 encodedAddress = address.toString();
                 break;
             default:
@@ -382,19 +371,17 @@ public class CryptoJ {
      * validate if address is valid (accrodring to given attributes) and contains no errors mis-typos etc
      *
      * @param network
-     * @param netType
      * @param address
      * @return
      * @throws CryptoException
      */
     public static boolean isAddressValid(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NonNull String address
     ) throws CryptoException {
-        NetworkParameters params = getNetworkParams(network, netType);
+        NetworkParameters params = getNetworkParams(network);
 
-        if (network == Network.ETHEREUM && address.startsWith("0x")) {
+        if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
             // ethereum legacy address
             return Utils.HEX.canDecode(address.toLowerCase().substring(2)) && // only hexadecimal characters
                     address.length() == 42; // 20bytes + "0x" = 42 characters
@@ -413,7 +400,6 @@ public class CryptoJ {
      * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
      *
      * @param network
-     * @param netType
      * @param utxobjects
      * @param txReceivers
      * @return
@@ -421,7 +407,6 @@ public class CryptoJ {
      */
     public String signBTCLTCBasedTransaction(
             @NonNull Network network,
-            @NonNull NetType netType,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
     ) throws CryptoException {
@@ -432,13 +417,13 @@ public class CryptoJ {
 
     public String generateSignedBitcoinBasedTransaction(
             @NonNull Currency currency,
-            @NonNull NetType netType,
+            @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
     ) throws CryptoException {
-        Network network = currency.getNetwork();
-        if (network != Network.BITCOIN && network != Network.LITECOIN) {
-            throw new CryptoException("This method can't be used on " + network.getName() + " network.");
+        CoinType coinType = currency.getCoinType();
+        if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
+            throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
         }
         for (UTXObject utxo : utxobjects) {
             utxo.setTxHash(utxo.getTxHash().replace(" ", ""));
@@ -449,13 +434,13 @@ public class CryptoJ {
                 throw new CryptoException("Invalid UTXO index.");
             }
             utxo.setPrivKey(utxo.getPrivKey().replace(" ", ""));
-            if (isPrivKeyValid(network, netType, utxo.getPrivKey()) == false) {
+            if (isPrivKeyValid(network, utxo.getPrivKey()) == false) {
                 throw new CryptoException("Sender's private key " + utxo.getPrivKey() + " for TxId=" + utxo.getTxHash() + " Index=" + utxo.getIndex() + " is invalid.");
             }
         }
         for (TXReceiver txReceiver : txReceivers) {
             txReceiver.setAddress(txReceiver.getAddress().replace(" ", ""));
-            if (isAddressValid(network, netType, txReceiver.getAddress()) == false) {
+            if (isAddressValid(network, txReceiver.getAddress()) == false) {
                 throw new CryptoException("Receiver's address " + txReceiver.getAddress() + " is invalid.");
             }
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
@@ -473,14 +458,13 @@ public class CryptoJ {
         }
         return signBTCLTCBasedTransaction(
                 network,
-                netType,
                 utxobjects,
                 txReceivers
         );
     }
 
     public String generateSignedEthereumBasedTransaction(
-            @NonNull NetType netType,
+            @NonNull Network network,
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
             @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
@@ -489,16 +473,16 @@ public class CryptoJ {
             @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
             @NonNull BigInteger gasLimitInUnits // for example 20000
     ) throws CryptoException {
-        Network network = currency.getNetwork();
-        if (network != Network.ETHEREUM) {
-            throw new CryptoException("This method can't be used on " + network.getName() + " network.");
+        CoinType coinType = currency.getCoinType();
+        if (coinType != CoinType.ETH) {
+            throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
         }
         fromPrivateKey = fromPrivateKey.replace(" ", "");
-        if (isPrivKeyValid(network, netType, fromPrivateKey) == false) {
+        if (isPrivKeyValid(network, fromPrivateKey) == false) {
             throw new CryptoException("Private key is invalid.");
         }
         toAddress = toAddress.replace(" ", "");
-        if (isAddressValid(network, netType, toAddress) == false) {
+        if (isAddressValid(network, toAddress) == false) {
             throw new CryptoException("To address is invalid.");
         }
         amount = amount.stripTrailingZeros();
@@ -528,7 +512,7 @@ public class CryptoJ {
                 nonce,
                 gasPriceInETHWei,
                 gasLimitInUnits,
-                !netType.isMainNet()
+                !network.isMainNet()
         );
     }
 
