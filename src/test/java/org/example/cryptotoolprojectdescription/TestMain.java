@@ -1,10 +1,49 @@
 package org.example.cryptotoolprojectdescription;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import org.bitcoinj.core.*;
+import org.bitcoinj.core.listeners.DownloadProgressTracker;
+import org.bitcoinj.core.listeners.PeerDataEventListener;
+import org.bitcoinj.kits.WalletAppKit;
+import org.bitcoinj.net.discovery.DnsDiscovery;
+import org.bitcoinj.net.discovery.PeerDiscovery;
+import org.bitcoinj.net.discovery.PeerDiscoveryException;
+import org.bitcoinj.params.MainNetParams;
+import org.bitcoinj.store.BlockStore;
+import org.bitcoinj.store.BlockStoreException;
+import org.bitcoinj.store.MemoryBlockStore;
+import org.bitcoinj.store.SPVBlockStore;
+import org.example.cryptotoolprojectdescription.classes.TXReceiver;
+import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
+import org.example.cryptotoolprojectdescription.enums.Currency;
 import org.example.cryptotoolprojectdescription.enums.Network;
 import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -303,6 +342,152 @@ public class TestMain {
             // TODO: ... add some test cases
         } catch (CryptoException e) {
             assertTrue(false, "Unexpected exception");
+        }
+    }
+
+    public boolean setupComplete;
+    @Test
+    @DisplayName("Test transaction")
+    void testTransaction() {
+        final double transactionFee = 0.00000225;
+        UTXObject[] utxos;
+        TXReceiver[] receivers;
+        String signedTx = null;
+
+/*
+        // Test case - 1: Legacy to Legacy
+        utxos = new UTXObject[] {
+            new UTXObject(
+                    "f9cd04069952d1926ac49f725d9e3bd13ef00afe5602411dee73d54655928cb0",
+                    1L,
+                    "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
+            )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.0001),
+                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.00073 - 0.0001 - transactionFee) // change
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
+            System.out.println("    Amount " + receivers[0].getAmount());
+            System.out.println("    Change " + receivers[1].getAmount());
+            System.out.println("Signed transaction data:");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Test case - 2: Legacy to Segwit
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "a6af4d0c9fbc22fc2ca2b77e93088ce0f1a36e8a56d9e4aaa6fad68e282d8e68",
+                        1L,
+                        "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.0001),
+                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.001 - 0.0001 - transactionFee) // change
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
+            System.out.println("    Amount " + receivers[0].getAmount());
+            System.out.println("    Change " + receivers[1].getAmount());
+            System.out.println("Signed transaction data:");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Test case - 3: Segwit to Legacy
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4",
+                        0L,
+                        "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.000004),
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00001 - 0.000004 - transactionFee) // change
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
+            System.out.println("    Amount " + receivers[0].getAmount());
+            System.out.println("    Change " + receivers[1].getAmount());
+            System.out.println("Signed transaction data:");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Test case - 4: Segwit to Segwit
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4",
+                        1L,
+                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004),
+                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.00008859 - 0.00004 - transactionFee) // change
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
+            System.out.println("    Amount " + receivers[0].getAmount());
+            System.out.println("    Change " + receivers[1].getAmount());
+            System.out.println("Signed transaction data:");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+*/
+        // Test case 5: merge UTXOs
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "bc3780eca9b191ec1f3b8cda10d85ac2e4c308d657a025607ddafb9f2bb26adc",
+                        1L,
+                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                ),
+                new UTXObject(
+                        "dd3eb16bfc6a08534d6ca4afc19f789d551eee28797edb48f71827b5cb03d4b0",
+                        1L,
+                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                ),
+                new UTXObject(
+                        "876fa2fca4aa5cd613ea46791e7b81e7a5757f0bbef73d7963b76a1bc04f5df8",
+                        0L,
+                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.00014388) // change
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
         }
     }
 }

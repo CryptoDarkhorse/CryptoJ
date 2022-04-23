@@ -37,7 +37,7 @@ public enum Currency {
             8,
             CoinType.BTC,
             new BigDecimal("0.00000001"),
-            Set.of(BITCOIN, BITCOIN_REGTEST, BITCOIN_REGTEST),
+            Set.of(BITCOIN, BITCOIN_TESTNET, BITCOIN_REGTEST),
             null,
             null,
             null
@@ -122,7 +122,12 @@ public enum Currency {
         this.minValue = minValue.setScale(scale, RoundingMode.DOWN);
         this.networks = networks;
         this.tokenType = tokenType;
-        this.smartContractAddress = smartContractAddress.replace(" ", "");
+
+        if (smartContractAddress != null) {
+            this.smartContractAddress = smartContractAddress.replace(" ", "");
+        } else {
+            this.smartContractAddress = null;
+        }
         this.minAmountForGrabber = minAmountForGrabber;
     }
 

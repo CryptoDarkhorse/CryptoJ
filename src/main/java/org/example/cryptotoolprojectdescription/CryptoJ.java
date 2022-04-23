@@ -4,8 +4,7 @@ import com.google.common.base.Splitter;
 import lombok.NonNull;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.*;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.UnreadableWalletException;
@@ -34,6 +33,10 @@ import org.web3j.utils.Numeric;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
@@ -406,6 +409,21 @@ public class CryptoJ {
         }
     }
 
+    private static String getTransaction(Network network, String txHash) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://mempool.space/testnet/api/tx/" + txHash + "/hex")).GET().build();
+            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                System.err.println("Fetching failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     /**
      * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
      *
@@ -422,28 +440,67 @@ public class CryptoJ {
     ) throws CryptoException {
         NetworkParameters params = getNetworkParams(network);
 
+        Context.getOrCreate(params);
+
         // Init transaction
         Transaction trans = new Transaction(params);
         trans.setVersion(2);
+
         // Add inputs
         for (int i = 0; i < utxobjects.length; i++) {
             UTXObject utxo = utxobjects[i];
-            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
-            Script script = ScriptBuilder.createP2PKHOutputScript(key);
-            byte[] message = Utils.HEX.decode(utxo.getTxHash());
-            TransactionInput input = trans.addInput(Sha256Hash.wrap(message), utxo.getIndex(), script);
-            Address ownerAddr = Address.fromKey(params, key, Script.ScriptType.P2PKH); // TODO: change script type using UTXO's ref
-            Script scriptPubkey = ScriptBuilder.createOutputScript(ownerAddr);
-            TransactionSignature txSignature = trans.calculateSignature(i, key, scriptPubkey, Transaction.SigHash.ALL, false);
-            input.setScriptSig(ScriptBuilder.createInputScript(txSignature, key));
+            // get transaction data from txHash
+            String prevHex = getTransaction(network, utxo.getTxHash());
+
+            if (prevHex.length() == 0) {
+                throw new CryptoException("Failed to get UTXO info from blockchain");
+            }
+
+            Transaction prevTransaction = new Transaction(params, Utils.HEX.decode(prevHex));
+
+            trans.addInput(prevTransaction.getOutput(utxo.getIndex()));
         }
 
-        // Add output
+        // Add outputs
         for (int i = 0; i < txReceivers.length; i++) {
             TXReceiver receiver = txReceivers[i];
             Address addr = Address.fromString(params, receiver.getAddress());
             Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
-            trans.addOutput(Coin.valueOf(receiver.getAmount().longValue()), scriptPubKey);
+            trans.addOutput(Coin.valueOf(Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
+        }
+
+        // Add inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+
+            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
+
+            TransactionInput input = trans.getInput(i);
+            TransactionOutput output = input.getConnectedOutput();
+
+            Transaction.SigHash sigHash = Transaction.SigHash.ALL;
+            boolean anyoneCanPay = false;
+            Script scriptPubKey = output.getScriptPubKey();
+
+            TransactionSignature signature;
+            if (ScriptPattern.isP2PK(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature));
+                input.setWitness((TransactionWitness)null);
+            } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
+                input.setWitness((TransactionWitness)null);
+            } else {
+                if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
+                    throw new CryptoException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
+                }
+
+                Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
+                signature = trans.calculateWitnessSignature(i, key, scriptCode, input.getValue(), sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createEmpty());
+                input.setWitness(TransactionWitness.redeemP2WPKH(signature, key));
+            }
         }
 
         trans.verify();
@@ -455,7 +512,7 @@ public class CryptoJ {
 
     // IMPLEMENTED METHODS //
 
-    public String generateSignedBitcoinBasedTransaction(
+    public static String generateSignedBitcoinBasedTransaction(
             @NonNull Currency currency,
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
@@ -486,9 +543,9 @@ public class CryptoJ {
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
             int scale = currency.getScale();
             RoundingMode rm = RoundingMode.DOWN;
-            if (amount.setScale(scale, rm).compareTo(amount) != 0) {
-                throw new CryptoException("Invalid amount scale.");
-            }
+//            if (amount.setScale(scale, rm).compareTo(amount) == 0) {
+//                throw new CryptoException("Invalid amount scale.");
+//            }
             amount = amount.setScale(scale, rm);
 
             if (amount.compareTo(currency.getMinValue()) < 0) {
