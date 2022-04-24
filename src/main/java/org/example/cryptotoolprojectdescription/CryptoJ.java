@@ -1,19 +1,23 @@
 package org.example.cryptotoolprojectdescription;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import lombok.NonNull;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
-import org.bitcoinj.script.*;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.UnreadableWalletException;
 import org.example.cryptotoolprojectdescription.classes.TXReceiver;
 import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
+import org.example.cryptotoolprojectdescription.enums.CoinType;
 import org.example.cryptotoolprojectdescription.enums.Currency;
 import org.example.cryptotoolprojectdescription.enums.Network;
-import org.example.cryptotoolprojectdescription.enums.CoinType;
 import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
 import org.example.cryptotoolprojectdescription.network.IWrappedNetParams;
 import org.example.cryptotoolprojectdescription.network.WrappedMainNetParams;
@@ -409,19 +413,39 @@ public class CryptoJ {
         }
     }
 
-    private static String getTransaction(Network network, String txHash) {
+    private static Transaction getParentTransaction(Network network, String txHash) {
         try {
-            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://mempool.space/testnet/api/tx/" + txHash + "/hex")).GET().build();
+            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
+                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
+                            "\"jsonrpc\": \"2.0\",\n" +
+                            "\"method\": \"getrawtransaction\",\n" +
+                            "\"params\": [ \n" +
+                            "\"" + txHash + "\"],\n" +
+                            "\"id\": 2\n" +
+                            "}"))
+                    .build();
+
             HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
-                return response.body();
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(response.body());
+                String rawTransHex = node.get("result").asText();
+
+                if (rawTransHex.equals("null")) {
+                    System.err.println("Not found");
+                    return null;
+                }
+
+                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
             } else {
                 System.err.println("Fetching failed");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "";
+        return null;
     }
 
     /**
@@ -450,15 +474,13 @@ public class CryptoJ {
         for (int i = 0; i < utxobjects.length; i++) {
             UTXObject utxo = utxobjects[i];
             // get transaction data from txHash
-            String prevHex = getTransaction(network, utxo.getTxHash());
+            Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
 
-            if (prevHex.length() == 0) {
+            if (prevTrans == null) {
                 throw new CryptoException("Failed to get UTXO info from blockchain");
             }
 
-            Transaction prevTransaction = new Transaction(params, Utils.HEX.decode(prevHex));
-
-            trans.addInput(prevTransaction.getOutput(utxo.getIndex()));
+            trans.addInput(prevTrans.getOutput(utxo.getIndex()));
         }
 
         // Add outputs
@@ -469,7 +491,7 @@ public class CryptoJ {
             trans.addOutput(Coin.valueOf(Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
         }
 
-        // Add inputs
+        // Sign inputs
         for (int i = 0; i < utxobjects.length; i++) {
             UTXObject utxo = utxobjects[i];
 

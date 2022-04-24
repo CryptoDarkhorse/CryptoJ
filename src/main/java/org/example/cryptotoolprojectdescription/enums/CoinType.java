@@ -10,9 +10,9 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE)
 public enum CoinType {
 
-    BTC("BITCOIN","Bitcoin"),
-    ETH("ETHEREUM","Ethereum"),
-    LTC("LITECOIN", "Litecoin");
+    BTC("BTC","Bitcoin"),
+    ETH("ETH","Ethereum"),
+    LTC("LTC", "Litecoin");
 
     final String code;
     final String name;

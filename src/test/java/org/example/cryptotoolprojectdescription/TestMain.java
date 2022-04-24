@@ -1,21 +1,5 @@
 package org.example.cryptotoolprojectdescription;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import org.bitcoinj.core.*;
-import org.bitcoinj.core.listeners.DownloadProgressTracker;
-import org.bitcoinj.core.listeners.PeerDataEventListener;
-import org.bitcoinj.kits.WalletAppKit;
-import org.bitcoinj.net.discovery.DnsDiscovery;
-import org.bitcoinj.net.discovery.PeerDiscovery;
-import org.bitcoinj.net.discovery.PeerDiscoveryException;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.store.BlockStore;
-import org.bitcoinj.store.BlockStoreException;
-import org.bitcoinj.store.MemoryBlockStore;
-import org.bitcoinj.store.SPVBlockStore;
 import org.example.cryptotoolprojectdescription.classes.TXReceiver;
 import org.example.cryptotoolprojectdescription.classes.UTXObject;
 import org.example.cryptotoolprojectdescription.enums.AddressType;
@@ -24,25 +8,6 @@ import org.example.cryptotoolprojectdescription.enums.Network;
 import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -345,16 +310,15 @@ public class TestMain {
         }
     }
 
-    public boolean setupComplete;
     @Test
     @DisplayName("Test transaction")
-    void testTransaction() {
+    void testBTCTransaction() {
         final double transactionFee = 0.00000225;
         UTXObject[] utxos;
         TXReceiver[] receivers;
         String signedTx = null;
 
-/*
+
         // Test case - 1: Legacy to Legacy
         utxos = new UTXObject[] {
             new UTXObject(
@@ -458,32 +422,131 @@ public class TestMain {
         } catch (CryptoException e) {
             e.printStackTrace();
         }
-*/
+
         // Test case 5: merge UTXOs
+
         utxos = new UTXObject[] {
                 new UTXObject(
                         "bc3780eca9b191ec1f3b8cda10d85ac2e4c308d657a025607ddafb9f2bb26adc",
+                        0L,
+                        "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
+                ),
+                new UTXObject(
+                        "766ad20a0687c9d163aea5d8d5efe3d618ba4ffeb8c837c44221d3c59ef7b4c2",
                         1L,
-                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                        "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
                 ),
                 new UTXObject(
                         "dd3eb16bfc6a08534d6ca4afc19f789d551eee28797edb48f71827b5cb03d4b0",
-                        1L,
-                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
-                ),
-                new UTXObject(
-                        "876fa2fca4aa5cd613ea46791e7b81e7a5757f0bbef73d7963b76a1bc04f5df8",
                         0L,
-                        "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
+                        "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
                 )
         };
 
         receivers = new TXReceiver[] {
-                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.00014388) // change
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004000) // change
         };
 
         try {
             signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @DisplayName("Test Litecoin Transaction")
+    void testLTCTransaction() {
+        final double transactionFee = 0.00000225;
+        UTXObject[] utxos;
+        TXReceiver[] receivers;
+        String signedTx = null;
+
+        // Testing legacy -> legacy
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "294aeaeab186bde9981aee39a0741e944a30245675f732005ba19cc7d78d5761",
+                        0L,
+                        "cNoirL31g43BHyKr8suPgfbStzCWPgQXs3eezj3q1gm5AMEDoq4f"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12499526),
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Testing legacy -> segwit
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "35e795079e25bbfcc5ec9aeb8243308bb6ff645f3e414c786905149ccbbe93f1",
+                        0L,
+                        "cVQ4DTWzG6d3W9rBijEzVMTJGDkm2Pb7MtG82B1arxQrYDx543u2"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm", 0.12499326),
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Testing segwit -> segwit
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "a9cae8aadde742aa910f6db7af869bdbc9a4aff184c6edbcf8b96c27c08c8300",
+                        0L,
+                        "cMywNUMjcs8diyGyZbJuj1sfdnNiKoTJzxQTYSLSojjyA3DPkHbT"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv", 0.12499126),
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
+            System.out.println(signedTx);
+            System.out.println("");
+        } catch (CryptoException e) {
+            e.printStackTrace();
+        }
+
+        // Testing segwit -> legacy
+        utxos = new UTXObject[] {
+                new UTXObject(
+                        "b0e63a2649259ef54cceeaf9682b6aa38c9c172fe6dc8ba77cce5298b9ba3c48",
+                        0L,
+                        "cTvwDi387CeKsgMKG8L2bquMTJaHGTnvWXvsCHQoNNy1H3Szq2RT"
+                )
+        };
+
+        receivers = new TXReceiver[] {
+                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12498926),
+        };
+
+        try {
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
         } catch (CryptoException e) {
