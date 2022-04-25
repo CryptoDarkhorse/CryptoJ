@@ -233,7 +233,7 @@ public class TestMain {
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 7);
             address = CryptoJ.generateAddress(network, addrType, xpub, 7);
-            assertEquals(address, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95");
+            assertEquals(address, "tltc1qjjrmmenxx7ca7c4yhvltqqwfefllg78mf7fkda");
             assertEquals(prvKey, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45");
         } catch (CryptoException e) {
             assertTrue(false, "Unexpected exception");

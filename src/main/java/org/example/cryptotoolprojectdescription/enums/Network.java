@@ -52,7 +52,7 @@ public enum Network {
     ),
     LITECOIN_TESTNET(
             LTC, false,1,
-            "litecointestnet", 0x6f, 0xc4, 0xef,
+            "tltc", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv
             0x043587cf,    // tpub
