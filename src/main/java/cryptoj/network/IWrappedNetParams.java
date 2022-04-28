@@ -1,7 +1,7 @@
 package cryptoj.network;
 
 public interface IWrappedNetParams {
-    public void setBIP32Headers(
+    void setBIP32Headers(
             final String bech32,
             final int pubKeyHash,
             final int scriptHash,

@@ -20,7 +20,8 @@ public class Example_X_Mnemonic_XPubs_Addresses_PrivateKeys {
         for (Network network : Network.values()) {
             for (AddressType addressType : AddressType.values()) {
 
-                if (addressType == AddressType.P2SH_PAY_TO_SCRIPT_HASH) continue; // it's not possible to generate xPub from this address type, therefore let's skip thisone
+                if (addressType == AddressType.P2SH_PAY_TO_SCRIPT_HASH)
+                    continue; // it's not possible to generate xPub from this address type, therefore let's skip thisone
 
                 String xPub = CryptoJ.generateXPub(
                         network,

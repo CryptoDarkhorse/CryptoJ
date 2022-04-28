@@ -11,7 +11,7 @@ public enum Network {
 
     BITCOIN_MAINNET(
             "BITCOIN_MAINNET", "Bitcoin (Mainnet)",
-            CoinType.BTC, true,0,
+            CoinType.BTC, true, 0,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv
@@ -20,7 +20,7 @@ public enum Network {
     ),
     BITCOIN_TESTNET(
             "BITCOIN_TESTNET", "Bitcoin (Testnet)",
-            CoinType.BTC, false,1,
+            CoinType.BTC, false, 1,
             "tb", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv
@@ -29,7 +29,7 @@ public enum Network {
     ),
     BITCOIN_REGTEST(
             "BITCOIN_REGTEST", "Bitcoin (Regtest)",
-            CoinType.BTC, false,1,
+            CoinType.BTC, false, 1,
             "bcrt", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv
@@ -38,7 +38,7 @@ public enum Network {
     ),
     ETHEREUM_MAINNET(
             "ETHEREUM_MAINNET", "Ethereum (Mainnet)",
-            CoinType.ETH, true,60,
+            CoinType.ETH, true, 60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv
@@ -47,7 +47,7 @@ public enum Network {
     ),
     ETHEREUM_TESTNET_ROPSTEN( // todo please use here real values to be able to use ROPSTEN testnet network as well
             "ETHEREUM_TESTNET_ROPSTEN", "Ethereum (Testnet Ropsten)",
-            CoinType.ETH, false,60,
+            CoinType.ETH, false, 60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv
@@ -56,7 +56,7 @@ public enum Network {
     ),
     LITECOIN_MAINNET(
             "LITECOIN_MAINNET", "Litecoin (Mainnet)",
-            CoinType.LTC, true,2,
+            CoinType.LTC, true, 2,
             "ltc", 0x30, 0x32, 0xb0,
             0x019da462,     // Ltub
             0x019d9cfe,     // Ltpv
@@ -65,7 +65,7 @@ public enum Network {
     ),
     LITECOIN_TESTNET(
             "LITECOIN_TESTNET", "Litecoin (Testnet)",
-            CoinType.LTC, false,1,
+            CoinType.LTC, false, 1,
             "tltc", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv

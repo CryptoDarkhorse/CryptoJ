@@ -48,31 +48,30 @@ import java.util.*;
  * one simple method you easily can:<br>
  * <br>
  * <li>
- *     Generate mnemonics (seeds)
+ * Generate mnemonics (seeds)
  * </li>
  * <li>
- *     Generate xpubs (extened public keys / wallets)
- *  </li>
- *  <li>
- *      Generate addresses and private keys
- *  </li>
- *  <li>
- *      Sign and verify a text message
- *  </li>
- *  <li>
- *      Prepare a signed transaction for broadcasting
- *  </li>
- *  <br>
- *  <i>Note: Supports Bitcoin, Litecoin, Ethereum (mainnets + testnets)</i><br>
- *  <br>
- *  <strong>Donation (Bitcoin):</strong> 1LKHGTi6xCUMxwc1D85kVagdtTa8zg46Ea<br>
- *  <strong>Donation (Ethereum & Tokens):</strong> 0xc86aa78178c160767c0003b35b287400444244f2
+ * Generate xpubs (extened public keys / wallets)
+ * </li>
+ * <li>
+ * Generate addresses and private keys
+ * </li>
+ * <li>
+ * Sign and verify a text message
+ * </li>
+ * <li>
+ * Prepare a signed transaction for broadcasting
+ * </li>
+ * <br>
+ * <i>Note: Supports Bitcoin, Litecoin, Ethereum (mainnets + testnets)</i><br>
+ * <br>
+ * <strong>Donation (Bitcoin):</strong> 1LKHGTi6xCUMxwc1D85kVagdtTa8zg46Ea<br>
+ * <strong>Donation (Ethereum & Tokens):</strong> 0xc86aa78178c160767c0003b35b287400444244f2
  *
- * @version 1.0
  * @author Marek Lorenc (me.marek.lorenc@gmail.com), Jordan Cameron (c.knight8817@gmail.com)
+ * @version 1.0
  */
 public class CryptoJ {
-
 
 
     // SECTION - MNEMONIC //
@@ -133,7 +132,6 @@ public class CryptoJ {
     }
 
 
-
     // SECTION - XPUB //
 
     /**
@@ -144,7 +142,7 @@ public class CryptoJ {
      * And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
      * which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
      *
-     * @param network network
+     * @param network  network
      * @param addrType address type
      * @param mnemonic phrase made of words
      * @return extened public key
@@ -215,7 +213,7 @@ public class CryptoJ {
      * Validate xPub.
      *
      * @param network network
-     * @param xPub xPub to be validated
+     * @param xPub    xPub to be validated
      * @return true if it's valid, otherwise false
      */
     public static boolean isXPubValid(
@@ -226,13 +224,11 @@ public class CryptoJ {
 
         try {
             DeterministicKey key = DeterministicKey.deserializeB58(xPub, params);
-            if (key.isPubKeyOnly()) return true;
-            return false; // extended private key
+            return key.isPubKeyOnly();// extended private key
         } catch (IllegalArgumentException ex) {
             return false;
         }
     }
-
 
 
     // SECTION - ADDRESS //
@@ -240,8 +236,8 @@ public class CryptoJ {
     /**
      * Generate blockchain address for receiving coins.
      *
-     * @param network network
-     * @param xPub xpub to generate the address from
+     * @param network         network
+     * @param xPub            xpub to generate the address from
      * @param derivationIndex derivation index
      * @return address for receiving coins
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -354,14 +350,13 @@ public class CryptoJ {
     }
 
 
-
     // SECTION - PRIVATE KEY //
 
     /**
      * Generate private key for an address.
      *
-     * @param network network
-     * @param mnemonic mnemonic
+     * @param network         network
+     * @param mnemonic        mnemonic
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -442,7 +437,7 @@ public class CryptoJ {
     /**
      * Validate private key.
      *
-     * @param network network
+     * @param network    network
      * @param privateKey to be validated
      * @return true if it's valid, otherwise false
      */
@@ -474,7 +469,6 @@ public class CryptoJ {
     }
 
 
-
     // SECTION - SIGN & VERIFY A TEXT MESSAGE //
 
     /**
@@ -499,7 +493,7 @@ public class CryptoJ {
      * See {@link cryptoj.examples.Example_4_SignAndVerifyMessage}
      *
      * @param signedMessage to be verified (decrypted)
-     * @param address to use to verify (decrypt) the signed (encrypted) message
+     * @param address       to use to verify (decrypt) the signed (encrypted) message
      * @return the original raw message
      */
     public static String verifyMessage(
@@ -508,7 +502,6 @@ public class CryptoJ {
     ) {
         throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
     }
-
 
 
     // SECTION - SIGN TRANSACTION //
@@ -563,66 +556,6 @@ public class CryptoJ {
         );
     }
 
-    public String signEthereumBasedTransaction(
-            @NonNull Network network,
-            @NonNull String fromPrivateKey,
-            @NonNull String toAddress,
-            @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
-            @NonNull Coin coin,
-            @NonNull BigInteger nonce,
-            @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
-            @NonNull BigInteger gasLimitInUnits // for example 20000
-    ) throws CryptoJException {
-        CoinType coinType = coin.getCoinType();
-        if (coinType != CoinType.ETH) {
-            throw new CryptoJException("Invalid coin type.");
-        }
-        if (coin.getNetworks().contains(network) == false) {
-            throw new CryptoJException("Invalid coin and network combination.");
-        }
-        fromPrivateKey = fromPrivateKey.replace(" ", "");
-        if (isPrivKeyValid(network, fromPrivateKey) == false) {
-            throw new CryptoJException("Private key is invalid.");
-        }
-        toAddress = toAddress.replace(" ", "");
-        if (isAddressValid(network, toAddress) == false) {
-            throw new CryptoJException("To address is invalid.");
-        }
-        amount = amount.stripTrailingZeros();
-        int scale = coin.getScale();
-        RoundingMode rm = RoundingMode.DOWN;
-        if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
-            throw new CryptoJException("Invalid amount scale.");
-        }
-        amount = amount.setScale(scale, rm);
-        if (amount.compareTo(coin.getMinValue()) < 0) {
-            throw new CryptoJException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
-        }
-        if (nonce.compareTo(BigInteger.ZERO) < 0) {
-            throw new CryptoJException("Invalid nonce. Must be greater or equal to zero.");
-        }
-        if (gasPriceInETHWei.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoJException("Invalid gas price in wei. Must be greater than zero.");
-        }
-        if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
-        }
-        return doSignEthereumBasedTransaction(
-                fromPrivateKey,
-                toAddress,
-                coin,
-                amount,
-                nonce,
-                gasPriceInETHWei,
-                gasLimitInUnits,
-                !network.isMainNet()
-        );
-    }
-
-
-
-    // SECTION - OTHERS //
-
     /**
      * Get network parameters.
      *
@@ -656,8 +589,7 @@ public class CryptoJ {
     }
 
 
-
-    // SECTION - PRIVATE LOCAL METHODS //
+    // SECTION - OTHERS //
 
     private static String doSignEthereumBasedTransaction(
             @NonNull String fromPrivateKey,
@@ -706,6 +638,9 @@ public class CryptoJ {
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
     }
+
+
+    // SECTION - PRIVATE LOCAL METHODS //
 
     private static String doSignBitcoinBasedTransaction(
             @NonNull Network network,
@@ -767,11 +702,11 @@ public class CryptoJ {
             if (ScriptPattern.isP2PK(scriptPubKey)) {
                 signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
                 input.setScriptSig(ScriptBuilder.createInputScript(signature));
-                input.setWitness((TransactionWitness)null);
+                input.setWitness(null);
             } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
                 signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
                 input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
-                input.setWitness((TransactionWitness)null);
+                input.setWitness(null);
             } else {
                 if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
                     throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
@@ -824,6 +759,62 @@ public class CryptoJ {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String signEthereumBasedTransaction(
+            @NonNull Network network,
+            @NonNull String fromPrivateKey,
+            @NonNull String toAddress,
+            @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
+            @NonNull Coin coin,
+            @NonNull BigInteger nonce,
+            @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
+            @NonNull BigInteger gasLimitInUnits // for example 20000
+    ) throws CryptoJException {
+        CoinType coinType = coin.getCoinType();
+        if (coinType != CoinType.ETH) {
+            throw new CryptoJException("Invalid coin type.");
+        }
+        if (coin.getNetworks().contains(network) == false) {
+            throw new CryptoJException("Invalid coin and network combination.");
+        }
+        fromPrivateKey = fromPrivateKey.replace(" ", "");
+        if (isPrivKeyValid(network, fromPrivateKey) == false) {
+            throw new CryptoJException("Private key is invalid.");
+        }
+        toAddress = toAddress.replace(" ", "");
+        if (isAddressValid(network, toAddress) == false) {
+            throw new CryptoJException("To address is invalid.");
+        }
+        amount = amount.stripTrailingZeros();
+        int scale = coin.getScale();
+        RoundingMode rm = RoundingMode.DOWN;
+        if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
+            throw new CryptoJException("Invalid amount scale.");
+        }
+        amount = amount.setScale(scale, rm);
+        if (amount.compareTo(coin.getMinValue()) < 0) {
+            throw new CryptoJException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
+        }
+        if (nonce.compareTo(BigInteger.ZERO) < 0) {
+            throw new CryptoJException("Invalid nonce. Must be greater or equal to zero.");
+        }
+        if (gasPriceInETHWei.compareTo(BigInteger.ZERO) <= 0) {
+            throw new CryptoJException("Invalid gas price in wei. Must be greater than zero.");
+        }
+        if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
+            throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
+        }
+        return doSignEthereumBasedTransaction(
+                fromPrivateKey,
+                toAddress,
+                coin,
+                amount,
+                nonce,
+                gasPriceInETHWei,
+                gasLimitInUnits,
+                !network.isMainNet()
+        );
     }
 
 }
