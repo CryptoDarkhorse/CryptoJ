@@ -12,7 +12,7 @@ public class Example1Mnemonic {
         int howManyMnemonic = 10;
         for (int i = 0; i < howManyMnemonic; i++) {
             int mnemonicLength = getRandomMnemonicLength();
-            System.out.println("Mnemonic no. " + i + ": " + CryptoJ.generateMnemonic(mnemonicLength));
+            System.out.println("Mnemonic no. " + i + " = " + CryptoJ.generateMnemonic(mnemonicLength));
         }
     }
 

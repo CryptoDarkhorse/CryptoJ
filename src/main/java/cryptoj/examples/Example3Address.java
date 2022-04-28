@@ -8,7 +8,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate all possible xPubs (for all networks and address types) from one random mnemonic.
  */
-public class Example2Address {
+public class Example3Address {
 
 
 
