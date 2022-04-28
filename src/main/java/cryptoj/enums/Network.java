@@ -8,7 +8,9 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter
 @FieldDefaults(level = PRIVATE)
 public enum Network {
+
     BITCOIN_MAINNET(
+            "BITCOIN_MAINNET", "Bitcoin (Mainnet)",
             CoinType.BTC, true,0,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
@@ -17,6 +19,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     BITCOIN_TESTNET(
+            "BITCOIN_TESTNET", "Bitcoin (Testnet)",
             CoinType.BTC, false,1,
             "tb", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
@@ -25,6 +28,7 @@ public enum Network {
             0x045f18bc     // vprv
     ),
     BITCOIN_REGTEST(
+            "BITCOIN_REGTEST", "Bitcoin (Regtest)",
             CoinType.BTC, false,1,
             "bcrt", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
@@ -33,6 +37,7 @@ public enum Network {
             0x045f18bc     // vprv
     ),
     ETHEREUM_MAINNET(
+            "ETHEREUM_MAINNET", "Ethereum (Mainnet)",
             CoinType.ETH, true,60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
@@ -41,6 +46,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     ETHEREUM_TESTNET_ROPSTEN( // todo please use here real values to be able to use ROPSTEN testnet network as well
+            "ETHEREUM_TESTNET_ROPSTEN", "Ethereum (Testnet Ropsten)",
             CoinType.ETH, false,60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
@@ -49,6 +55,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     LITECOIN_MAINNET(
+            "LITECOIN_MAINNET", "Litecoin (Mainnet)",
             CoinType.LTC, true,2,
             "ltc", 0x30, 0x32, 0xb0,
             0x019da462,     // Ltub
@@ -57,6 +64,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     LITECOIN_TESTNET(
+            "LITECOIN_TESTNET", "Litecoin (Testnet)",
             CoinType.LTC, false,1,
             "tltc", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
@@ -64,6 +72,9 @@ public enum Network {
             0x043587cf,    // tpub
             0x04358394     // tprv
     );
+
+    final String code;
+    final String name;
 
     final CoinType coinType; // network code - matched with Network.code
     final boolean isMainNet;
@@ -80,6 +91,8 @@ public enum Network {
     final int p2wpkhPriv;
 
     Network(
+            final String code,
+            final String name,
             final CoinType coinType,
             final boolean isMainNet,
             final int coinId,
@@ -92,6 +105,8 @@ public enum Network {
             final int p2wpkhPub,
             final int p2wpkhPriv
     ) {
+        this.code = code;
+        this.name = name;
         this.coinType = coinType;
         this.isMainNet = isMainNet;
         this.coinId = coinId;
@@ -104,4 +119,5 @@ public enum Network {
         this.p2wpkhPub = p2wpkhPub;
         this.p2wpkhPriv = p2wpkhPriv;
     }
+
 }
