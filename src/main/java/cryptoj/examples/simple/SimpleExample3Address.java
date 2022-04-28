@@ -18,7 +18,6 @@ public class SimpleExample3Address {
                 0
         );
         System.out.println("Address = " + address);
-
     }
 
 }
