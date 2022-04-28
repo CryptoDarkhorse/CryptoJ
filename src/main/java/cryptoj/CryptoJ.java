@@ -46,6 +46,10 @@ import java.util.List;
 
 public class CryptoJ {
 
+
+
+    // SECTION - MNEMONIC //
+
     /**
      * Generate valid mnemonic.
      *
@@ -101,37 +105,9 @@ public class CryptoJ {
         }
     }
 
-    /**
-     * Get network parameters.
-     *
-     * @param network from which to get network parameters
-     * @return network parameters
-     */
-    public static NetworkParameters getNetworkParams(Network network) {
-        IWrappedNetParams wrappedParams = null;
-        NetworkParameters params = null;
 
-        if (network.isMainNet()) {
-            params = WrappedMainNetParams.get();
-            wrappedParams = WrappedMainNetParams.get();
-        } else {
-            params = WrappedTestNetParams.get();
-            wrappedParams = WrappedTestNetParams.get();
-        }
 
-        wrappedParams.setBIP32Headers(
-                network.getBech32(),
-                network.getPubKeyHash(),
-                network.getScriptHash(),
-                network.getWif(),
-                network.getP2pkhPub(),
-                network.getP2pkhPriv(),
-                network.getP2wpkhPub(),
-                network.getP2wpkhPriv()
-        );
-
-        return params;
-    }
+    // SECTION - XPUB //
 
     /**
      * Generate extended public key from given attributes.
@@ -229,6 +205,104 @@ public class CryptoJ {
             return false;
         }
     }
+
+
+
+    // SECTION - ADDRESS //
+
+    /**
+     * generate address (according to given attributes) to receive coins
+     *
+     * @param network
+     * @param xPub
+     * @param derivationIndex
+     * @return
+     * @throws CryptoJException
+     */
+    public static String generateAddress(
+            @NonNull Network network,
+            @NonNull AddressType addrType,
+            @NonNull String xPub,
+            @NonNull int derivationIndex
+    ) throws CryptoJException {
+        if (!isXPubValid(network, xPub)) {
+            throw new CryptoJException("Invalid xpub");
+        }
+
+        NetworkParameters params = getNetworkParams(network);
+
+        DeterministicKey xpubKey = DeterministicKey.deserializeB58(xPub, params);
+
+        DeterministicKey key = HDKeyDerivation.deriveChildKey(xpubKey, new ChildNumber(derivationIndex, false));
+
+        Script.ScriptType scryptType = Script.ScriptType.P2PKH;
+
+        switch (addrType) {
+            case P2PKH_LEGACY:
+                scryptType = Script.ScriptType.P2PKH;
+                break;
+            case P2WPKH_NATIVE_SEGWIT:
+            case P2TR_TAPROOT:
+                scryptType = Script.ScriptType.P2WPKH;
+                break;
+            case P2SH_PAY_TO_SCRIPT_HASH:
+                throw new CryptoJException("P2SH does not support HD wallet");
+            default:
+                throw new CryptoJException("Unsupported address type");
+        }
+
+        Address address = Address.fromKey(params, key, scryptType);
+
+        String encodedAddress = "";
+        switch (network.getCoinType()) {
+            case ETH:
+                if (addrType == AddressType.P2PKH_LEGACY) {
+                    byte[] encoded = key.getPubKeyPoint().getEncoded(false);
+                    BigInteger publicKey = new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
+                    return Keys.toChecksumAddress(Keys.getAddress(publicKey));
+                }
+            case BTC:
+            case LTC:
+                encodedAddress = address.toString();
+                break;
+            default:
+                throw new CryptoJException("Unsupported network");
+        }
+        return encodedAddress;
+    }
+
+    /**
+     * validate if address is valid (according to given attributes) and contains no errors mis-typos etc
+     *
+     * @param network
+     * @param address
+     * @return
+     * @throws CryptoJException
+     */
+    public static boolean isAddressValid(
+            @NonNull Network network,
+            @NonNull String address
+    ) throws CryptoJException {
+        NetworkParameters params = getNetworkParams(network);
+
+        if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
+            // ethereum legacy address
+            return Utils.HEX.canDecode(address.toLowerCase().substring(2)) && // only hexadecimal characters
+                    address.length() == 42; // 20bytes + "0x" = 42 characters
+        }
+
+        try {
+            Address.fromString(params, address);
+            return true;
+        } catch (AddressFormatException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+    // SECTION - PRIVATE KEY //
 
     /**
      * generate private key
@@ -338,216 +412,29 @@ public class CryptoJ {
         }
     }
 
-    /**
-     * generate address (according to given attributes) to receive coins
-     *
-     * @param network
-     * @param xPub
-     * @param derivationIndex
-     * @return
-     * @throws CryptoJException
-     */
-    public static String generateAddress(
-            @NonNull Network network,
-            @NonNull AddressType addrType,
-            @NonNull String xPub,
-            @NonNull int derivationIndex
-    ) throws CryptoJException {
-        if (!isXPubValid(network, xPub)) {
-            throw new CryptoJException("Invalid xpub");
-        }
 
-        NetworkParameters params = getNetworkParams(network);
 
-        DeterministicKey xpubKey = DeterministicKey.deserializeB58(xPub, params);
+    // SECTION - SIGN & VERIFY A TEXT MESSAGE //
 
-        DeterministicKey key = HDKeyDerivation.deriveChildKey(xpubKey, new ChildNumber(derivationIndex, false));
-
-        Script.ScriptType scryptType = Script.ScriptType.P2PKH;
-
-        switch (addrType) {
-            case P2PKH_LEGACY:
-                scryptType = Script.ScriptType.P2PKH;
-                break;
-            case P2WPKH_NATIVE_SEGWIT:
-            case P2TR_TAPROOT:
-                scryptType = Script.ScriptType.P2WPKH;
-                break;
-            case P2SH_PAY_TO_SCRIPT_HASH:
-                throw new CryptoJException("P2SH does not support HD wallet");
-            default:
-                throw new CryptoJException("Unsupported address type");
-        }
-
-        Address address = Address.fromKey(params, key, scryptType);
-
-        String encodedAddress = "";
-        switch (network.getCoinType()) {
-            case ETH:
-                if (addrType == AddressType.P2PKH_LEGACY) {
-                    byte[] encoded = key.getPubKeyPoint().getEncoded(false);
-                    BigInteger publicKey = new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
-                    return Keys.toChecksumAddress(Keys.getAddress(publicKey));
-                }
-            case BTC:
-            case LTC:
-                encodedAddress = address.toString();
-                break;
-            default:
-                throw new CryptoJException("Unsupported network");
-        }
-        return encodedAddress;
+    // todo implement please
+    public static String signTextMessage(
+            @NonNull String textMessage,
+            @NonNull String privateKey
+    ) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
-    /**
-     * validate if address is valid (according to given attributes) and contains no errors mis-typos etc
-     *
-     * @param network
-     * @param address
-     * @return
-     * @throws CryptoJException
-     */
-    public static boolean isAddressValid(
-            @NonNull Network network,
+    // todo implement please
+    public static String verifyTextMessage(
+            @NonNull String textMessage,
             @NonNull String address
-    ) throws CryptoJException {
-        NetworkParameters params = getNetworkParams(network);
-
-        if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
-            // ethereum legacy address
-            return Utils.HEX.canDecode(address.toLowerCase().substring(2)) && // only hexadecimal characters
-                    address.length() == 42; // 20bytes + "0x" = 42 characters
-        }
-
-        try {
-            Address.fromString(params, address);
-            return true;
-        } catch (AddressFormatException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+    ) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
-    private static Transaction getParentTransaction(Network network, String txHash) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
-                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
-                            "\"jsonrpc\": \"2.0\",\n" +
-                            "\"method\": \"getrawtransaction\",\n" +
-                            "\"params\": [ \n" +
-                            "\"" + txHash + "\"],\n" +
-                            "\"id\": 2\n" +
-                            "}"))
-                    .build();
 
-            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(response.body());
-                String rawTransHex = node.get("result").asText();
 
-                if (rawTransHex.equals("null")) {
-                    System.err.println("Not found");
-                    return null;
-                }
-
-                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
-            } else {
-                System.err.println("Fetching failed");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
-     *
-     * @param network
-     * @param utxobjects
-     * @param txReceivers
-     * @return
-     * @throws CryptoJException
-     */
-    public static String signBTCLTCBasedTransaction(
-            @NonNull Network network,
-            @NonNull UTXObject[] utxobjects,
-            @NonNull TXReceiver[] txReceivers
-    ) throws CryptoJException {
-        NetworkParameters params = getNetworkParams(network);
-
-        Context.getOrCreate(params);
-
-        // Init transaction
-        Transaction trans = new Transaction(params);
-        trans.setVersion(2);
-
-        // Add inputs
-        for (int i = 0; i < utxobjects.length; i++) {
-            UTXObject utxo = utxobjects[i];
-            // get transaction data from txHash
-            Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
-
-            if (prevTrans == null) {
-                throw new CryptoJException("Failed to get UTXO info from blockchain");
-            }
-
-            trans.addInput(prevTrans.getOutput(utxo.getIndex()));
-        }
-
-        // Add outputs
-        for (int i = 0; i < txReceivers.length; i++) {
-            TXReceiver receiver = txReceivers[i];
-            Address addr = Address.fromString(params, receiver.getAddress());
-            Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
-            trans.addOutput(org.bitcoinj.core.Coin.valueOf(org.bitcoinj.core.Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
-        }
-
-        // Sign inputs
-        for (int i = 0; i < utxobjects.length; i++) {
-            UTXObject utxo = utxobjects[i];
-
-            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
-
-            TransactionInput input = trans.getInput(i);
-            TransactionOutput output = input.getConnectedOutput();
-
-            Transaction.SigHash sigHash = Transaction.SigHash.ALL;
-            boolean anyoneCanPay = false;
-            Script scriptPubKey = output.getScriptPubKey();
-
-            TransactionSignature signature;
-            if (ScriptPattern.isP2PK(scriptPubKey)) {
-                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createInputScript(signature));
-                input.setWitness((TransactionWitness)null);
-            } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
-                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
-                input.setWitness((TransactionWitness)null);
-            } else {
-                if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
-                    throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
-                }
-
-                Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
-                signature = trans.calculateWitnessSignature(i, key, scriptCode, input.getValue(), sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createEmpty());
-                input.setWitness(TransactionWitness.redeemP2WPKH(signature, key));
-            }
-        }
-
-        trans.verify();
-        trans.getConfidence().setSource(TransactionConfidence.Source.SELF);
-        trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
-
-        return Utils.HEX.encode(trans.bitcoinSerialize());
-    }
-
-    // IMPLEMENTED METHODS //
+    // SECTION - SIGN TRANSACTION //
 
     public static String generateSignedBitcoinBasedTransaction(
             @NonNull Coin coin,
@@ -650,7 +537,47 @@ public class CryptoJ {
         );
     }
 
-    String signEthBasedTransaction(
+
+
+    // SECTION - OTHERS //
+
+    /**
+     * Get network parameters.
+     *
+     * @param network from which to get network parameters
+     * @return network parameters
+     */
+    public static NetworkParameters getNetworkParams(Network network) {
+        IWrappedNetParams wrappedParams = null;
+        NetworkParameters params = null;
+
+        if (network.isMainNet()) {
+            params = WrappedMainNetParams.get();
+            wrappedParams = WrappedMainNetParams.get();
+        } else {
+            params = WrappedTestNetParams.get();
+            wrappedParams = WrappedTestNetParams.get();
+        }
+
+        wrappedParams.setBIP32Headers(
+                network.getBech32(),
+                network.getPubKeyHash(),
+                network.getScriptHash(),
+                network.getWif(),
+                network.getP2pkhPub(),
+                network.getP2pkhPriv(),
+                network.getP2wpkhPub(),
+                network.getP2wpkhPriv()
+        );
+
+        return params;
+    }
+
+
+
+    // SECTION - PRIVATE LOCAL METHODS //
+
+    private static String signEthBasedTransaction(
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
             @NonNull Coin coin,
@@ -696,6 +623,125 @@ public class CryptoJ {
         }
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
+    }
+
+    private static Transaction getParentTransaction(Network network, String txHash) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
+                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
+                            "\"jsonrpc\": \"2.0\",\n" +
+                            "\"method\": \"getrawtransaction\",\n" +
+                            "\"params\": [ \n" +
+                            "\"" + txHash + "\"],\n" +
+                            "\"id\": 2\n" +
+                            "}"))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(response.body());
+                String rawTransHex = node.get("result").asText();
+
+                if (rawTransHex.equals("null")) {
+                    System.err.println("Not found");
+                    return null;
+                }
+
+                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
+            } else {
+                System.err.println("Fetching failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
+     *
+     * @param network
+     * @param utxobjects
+     * @param txReceivers
+     * @return
+     * @throws CryptoJException
+     */
+    private static String signBTCLTCBasedTransaction(
+            @NonNull Network network,
+            @NonNull UTXObject[] utxobjects,
+            @NonNull TXReceiver[] txReceivers
+    ) throws CryptoJException {
+        NetworkParameters params = getNetworkParams(network);
+
+        Context.getOrCreate(params);
+
+        // Init transaction
+        Transaction trans = new Transaction(params);
+        trans.setVersion(2);
+
+        // Add inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+            // get transaction data from txHash
+            Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
+
+            if (prevTrans == null) {
+                throw new CryptoJException("Failed to get UTXO info from blockchain");
+            }
+
+            trans.addInput(prevTrans.getOutput(utxo.getIndex()));
+        }
+
+        // Add outputs
+        for (int i = 0; i < txReceivers.length; i++) {
+            TXReceiver receiver = txReceivers[i];
+            Address addr = Address.fromString(params, receiver.getAddress());
+            Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
+            trans.addOutput(org.bitcoinj.core.Coin.valueOf(org.bitcoinj.core.Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
+        }
+
+        // Sign inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+
+            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
+
+            TransactionInput input = trans.getInput(i);
+            TransactionOutput output = input.getConnectedOutput();
+
+            Transaction.SigHash sigHash = Transaction.SigHash.ALL;
+            boolean anyoneCanPay = false;
+            Script scriptPubKey = output.getScriptPubKey();
+
+            TransactionSignature signature;
+            if (ScriptPattern.isP2PK(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature));
+                input.setWitness((TransactionWitness)null);
+            } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
+                input.setWitness((TransactionWitness)null);
+            } else {
+                if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
+                    throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
+                }
+
+                Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
+                signature = trans.calculateWitnessSignature(i, key, scriptCode, input.getValue(), sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createEmpty());
+                input.setWitness(TransactionWitness.redeemP2WPKH(signature, key));
+            }
+        }
+
+        trans.verify();
+        trans.getConfidence().setSource(TransactionConfidence.Source.SELF);
+        trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
+
+        return Utils.HEX.encode(trans.bitcoinSerialize());
     }
 
 }
