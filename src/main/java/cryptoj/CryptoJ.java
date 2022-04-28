@@ -725,6 +725,15 @@ public class CryptoJ {
             UTXObject utxo = utxobjects[i];
             // get transaction data from txHash
             Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
+            // FIXME: this must be all local and offline. The point and main idea of this javalib is to have everything locally. We must prepare
+            //  signed transaction locally, without fetching any data online. If there's missing data in
+            //  the UTXObject class, then let's modify the UTXObject class and require all necessary data from
+            //  the user. When I did my own implementation of signing a BTC(legacy-only) transaction, this
+            //  UTXObject contained all what I needed to sign it locally (not fetching anything online)
+            //  There's tx has of unspent transaction, index of the receiver address of unspent transaction and privKey from that address
+            //  What else we need? I think nothing, with this, I was able to sign transactions (legacy) I can share the code with you if you want to
+            //  I will put it here: see cryptoj.oldimpl.BtcSign.sign() method (DOESNT WORK WHEN SENDING BTC TO BECH32 ADDRESSES, AS FAR AS I KNOW (maybe I am wrong, pls test it more), THIS
+            //  WAS ACTUALLY THE ORIGINAL MAIN MOST IMPORTANT REASONS WHY I STARTED THIS WHOLE CRYPTOJ PROJECT)
 
             if (prevTrans == null) {
                 throw new CryptoJException("Failed to get UTXO info from blockchain");

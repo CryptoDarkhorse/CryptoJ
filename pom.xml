@@ -4,10 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+
     <groupId>cryptoj</groupId>
     <artifactId>CryptoJ</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Universal java library for basic localhost work with cryptocurrencies</name>
+
 
     <properties>
         <java.version>17</java.version>
@@ -16,6 +18,16 @@
         <start-class>cryptoj.Main</start-class>
         <log4j2.version>2.17.2</log4j2.version>
     </properties>
+
+
+    <repositories>
+        <repository>
+            <id>repsy</id>
+            <name>Tatumio Maven Repositoty on Repsy</name>
+            <url>https://repo.repsy.io/mvn/tatumio/tatumio</url>
+        </repository>
+    </repositories>
+
 
     <dependencies>
         <dependency>
@@ -33,6 +45,29 @@
             <artifactId>bitcoinj-core</artifactId>
             <version>0.16.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.tatum</groupId>
+            <artifactId>tatum-java</artifactId>
+            <version>2.0.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>tronj</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tronj</groupId>
+                    <artifactId>wallet</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tronj</groupId>
+                    <artifactId>abi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tronj</groupId>
+                    <artifactId>utils</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- junit 5, unit test -->
         <dependency>
@@ -49,12 +84,13 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M6</version>
+                <version>2.22.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -66,4 +102,6 @@
             </plugin>
         </plugins>
     </build>
+
+
 </project>

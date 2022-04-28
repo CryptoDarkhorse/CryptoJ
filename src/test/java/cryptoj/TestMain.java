@@ -289,7 +289,7 @@ public class TestMain {
         assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
 
         assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
-        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95"));
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95")); // FIXME this test fails
 
         // invalid key - containing invalid character - I
         assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
@@ -492,7 +492,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers); // FIXME this test fails
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
             System.out.println(signedTx);
             System.out.println("");
@@ -514,7 +514,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers); // FIXME this test fails
             System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
             System.out.println(signedTx);
             System.out.println("");
