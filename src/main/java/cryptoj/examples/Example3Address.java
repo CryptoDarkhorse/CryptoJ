@@ -6,7 +6,7 @@ import cryptoj.enums.Network;
 import cryptoj.exceptions.CryptoJException;
 
 /**
- * Generate all possible xPubs (for all networks and address types) from one random mnemonic.
+ * Generate all possible xPubs and addresses (for all networks and address types) from one random mnemonic.
  */
 public class Example3Address {
 
