@@ -3,7 +3,7 @@ package cryptoj;
 import cryptoj.classes.TXReceiver;
 import cryptoj.classes.UTXObject;
 import cryptoj.enums.AddressType;
-import cryptoj.enums.Currency;
+import cryptoj.enums.Coin;
 import cryptoj.enums.Network;
 import cryptoj.exceptions.CryptoException;
 import org.junit.jupiter.api.DisplayName;
@@ -45,9 +45,9 @@ public class TestMain {
              */
 
             // Bitcoin mainnet
-            xpubKey = CryptoJ.generateXPub(Network.BITCOIN, AddressType.P2PKH_LEGACY, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.BITCOIN_MAINNET, AddressType.P2PKH_LEGACY, mnemonic);
             assertEquals(xpubKey, "xpub6FMTbmnDJwazR9LAnoTn8PwZWLHzJd7jLBng6cqCAaEhp7ZMLAf1usWraE3VVqtNphkPMf6YoRDzPuwLATY362uS4FGZfdDbfDTbFH1sdwz");
-            xpubKey = CryptoJ.generateXPub(Network.BITCOIN, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.BITCOIN_MAINNET, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
             assertEquals(xpubKey, "zpub6tvnwHiSB6q4jc7bXkJTgVTTisdsn3zMdUvyEeUCA86PVhsj1JcS9kAZXEVbNBuWCpkk7KQf6HE4b9x7mX9kp8vGAJPRhGhjgg9byG9xNvo");
 
             // Bitcoin regtest
@@ -63,15 +63,15 @@ public class TestMain {
             assertEquals(xpubKey, "vpub5bCa8otgRnQ7Xb7qhGFEkGwRjDz82Qfj3x9e5c2r5Xqpobz6MPaf3Zs4M6uNartStzWAuaZNZFdM3TThRTHKdN1NXbGSnXwqRgpS1kxSjtL");
 
             // Ethereum
-            xpubKey = CryptoJ.generateXPub(Network.ETHEREUM, AddressType.P2PKH_LEGACY, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.ETHEREUM_MAINNET, AddressType.P2PKH_LEGACY, mnemonic);
             assertEquals(xpubKey, "xpub6E1AXXK6MkDEsbNhCefGmfZjkxyzKGiA4hHnW6L8ZmfEwP3cNdKe264ApHFo2W4fp2nwEsNxyyfQtiyg3dXtXATh8yagyJ1i5HNv5c1C2zv");
-            xpubKey = CryptoJ.generateXPub(Network.ETHEREUM, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.ETHEREUM_MAINNET, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
             assertEquals(xpubKey, "zpub6tUrF813QV9gcPERodUnGLBQdRP2wa1CBKf1XV7zesBV2hkba3FyB8ExZ1Ujngmc12FpfaA2qQJGc5c7bNYovLm9AyVrsn72x2Gjuc1f6BG");
 
             // Litecoin mainnet
-            xpubKey = CryptoJ.generateXPub(Network.LITECOIN, AddressType.P2PKH_LEGACY, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.LITECOIN_MAINNET, AddressType.P2PKH_LEGACY, mnemonic);
             assertEquals(xpubKey, "Ltub2bQDUX7WAWbe8KsoQp7rwbbJ5dwtzGUyKmu9U9pLyGV8AYtALWfTwAsestHyxwSMsHjmG4JwSRGjQUsZcqt4AiSGAdbF5rZSKQQrCDh6nqj");
-            xpubKey = CryptoJ.generateXPub(Network.LITECOIN, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
+            xpubKey = CryptoJ.generateXPub(Network.LITECOIN_MAINNET, AddressType.P2WPKH_NATIVE_SEGWIT, mnemonic);
             assertEquals(xpubKey, "zpub6toHVn6wiReBoYxhWj3BdpW2wZ4M3G17aRv4DyP4XmMENkVPZxBpDTVfPXfzyepCiDK4J83tj6hGCEzHJTxvoedykoiyy5XDcFWukSfZajk");
 
             // Litecoin testnet
@@ -83,7 +83,7 @@ public class TestMain {
             /**
              * Test function isXPubValid
              */
-            Network network = Network.BITCOIN;
+            Network network = Network.BITCOIN_MAINNET;
             AddressType addrType = AddressType.P2PKH_LEGACY;
             boolean isValid = false;
 
@@ -140,7 +140,7 @@ public class TestMain {
         String prvKey = "";
 
         try {
-            network = Network.BITCOIN;
+            network = Network.BITCOIN_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 0);
@@ -148,7 +148,7 @@ public class TestMain {
             assertEquals(address, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W");
             assertEquals(prvKey, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq");
 
-            network = Network.BITCOIN;
+            network = Network.BITCOIN_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 3);
@@ -188,7 +188,7 @@ public class TestMain {
             assertEquals(address, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf");
             assertEquals(prvKey, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp");
 
-            network = Network.ETHEREUM;
+            network = Network.ETHEREUM_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 4);
@@ -196,7 +196,7 @@ public class TestMain {
             assertEquals(address, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB");
             assertEquals(prvKey, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81");
 
-            network = Network.ETHEREUM;
+            network = Network.ETHEREUM_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 1);
@@ -204,7 +204,7 @@ public class TestMain {
             assertEquals(address, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7");
             assertEquals(prvKey, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf");
 
-            network = Network.LITECOIN;
+            network = Network.LITECOIN_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 9);
@@ -212,7 +212,7 @@ public class TestMain {
             assertEquals(address, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8");
             assertEquals(prvKey, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx");
 
-            network = Network.LITECOIN;
+            network = Network.LITECOIN_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
             prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 5);
@@ -244,8 +244,8 @@ public class TestMain {
     @DisplayName("Test private key validity")
     void testPrivateKey() {
         try {
-            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
-            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC"));
 
             assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_TESTNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
             assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_TESTNET, "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"));
@@ -253,21 +253,21 @@ public class TestMain {
             assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_REGTEST, "cQiQ1qtkzRc83ES9zn7sAJuL7LQki6qwjCsmpKX49Y63wrQyctkR"));
             assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_REGTEST, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp"));
 
-            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81"));
-            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM_MAINNET, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM_MAINNET, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf"));
 
-            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx"));
-            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_MAINNET, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx"));
+            assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_MAINNET, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy"));
 
             assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_TESTNET, "cVdsBsrPLZsEtLxh8TQfjmdaSXDG3632zuHYBNDRDYbSvwQxwApi"));
             assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_TESTNET, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45"));
 
             // invalid key - containing invalid character
-            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, "L3zJJbXrwr7Gk5Jbp7IcqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7IcqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
             // invalid key - checksum validation failed
-            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, "Kx7rDkP5ESZnhXVjBSUsRP3ChNw3VArUV2QMBuiZkNW7cqJqReC"));
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3ChNw3VArUV2QMBuiZkNW7cqJqReC"));
             // invalid key - invalid network
-            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
+            assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
 
             // TODO: ... add some test cases
         } catch (CryptoException e) {
@@ -279,8 +279,8 @@ public class TestMain {
     @DisplayName("Test address validity")
     void testAddress() {
         try {
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd"));
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd"));
 
             assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
             assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln"));
@@ -288,21 +288,21 @@ public class TestMain {
             assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "n31cruGhMj8gFJWjUNk2HdNjqw3gCSABPa"));
             assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB"));
-            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7"));
+            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB"));
+            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8"));
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8"));
+            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
 
             assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
             assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95"));
 
             // invalid key - containing invalid character - I
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
             // invalid key - checksum validation failed - some characters removed
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, "bc1qqkhc9mjkw0rr6n5xechhnvldnd8g7nc3smd"));
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvldnd8g7nc3smd"));
             // invalid key - invalid network - address should be TESTNET
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
+            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
 
             // TODO: ... add some test cases
         } catch (CryptoException e) {
@@ -334,7 +334,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -360,7 +360,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -386,7 +386,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -412,7 +412,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -448,7 +448,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
             System.out.println(signedTx);
             System.out.println("");
@@ -479,7 +479,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
@@ -501,7 +501,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
             System.out.println(signedTx);
             System.out.println("");
@@ -523,7 +523,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
             System.out.println(signedTx);
             System.out.println("");
@@ -545,7 +545,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Currency.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");

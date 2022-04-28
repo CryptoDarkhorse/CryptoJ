@@ -6,8 +6,8 @@ import com.google.common.base.Splitter;
 import cryptoj.classes.TXReceiver;
 import cryptoj.classes.UTXObject;
 import cryptoj.enums.AddressType;
+import cryptoj.enums.Coin;
 import cryptoj.enums.CoinType;
-import cryptoj.enums.Currency;
 import cryptoj.enums.Network;
 import cryptoj.exceptions.CryptoException;
 import cryptoj.network.IWrappedNetParams;
@@ -488,7 +488,7 @@ public class CryptoJ {
             TXReceiver receiver = txReceivers[i];
             Address addr = Address.fromString(params, receiver.getAddress());
             Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
-            trans.addOutput(Coin.valueOf(Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
+            trans.addOutput(org.bitcoinj.core.Coin.valueOf(org.bitcoinj.core.Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
         }
 
         // Sign inputs
@@ -535,12 +535,12 @@ public class CryptoJ {
     // IMPLEMENTED METHODS //
 
     public static String generateSignedBitcoinBasedTransaction(
-            @NonNull Currency currency,
+            @NonNull Coin coin,
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
     ) throws CryptoException {
-        CoinType coinType = currency.getCoinType();
+        CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
             throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
         }
@@ -563,15 +563,15 @@ public class CryptoJ {
                 throw new CryptoException("Receiver's address " + txReceiver.getAddress() + " is invalid.");
             }
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
-            int scale = currency.getScale();
+            int scale = coin.getScale();
             RoundingMode rm = RoundingMode.DOWN;
 //            if (amount.setScale(scale, rm).compareTo(amount) == 0) {
 //                throw new CryptoException("Invalid amount scale.");
 //            }
             amount = amount.setScale(scale, rm);
 
-            if (amount.compareTo(currency.getMinValue()) < 0) {
-                throw new CryptoException("Receiver's amount " + amount + " is less than min " + currency.getMinValue() + " " + currency.getCode() + ".");
+            if (amount.compareTo(coin.getMinValue()) < 0) {
+                throw new CryptoException("Receiver's amount " + amount + " is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
             }
             txReceiver.setAmount(amount);
         }
@@ -587,12 +587,12 @@ public class CryptoJ {
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
             @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
-            @NonNull Currency currency,
+            @NonNull Coin coin,
             @NonNull BigInteger nonce,
             @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
             @NonNull BigInteger gasLimitInUnits // for example 20000
     ) throws CryptoException {
-        CoinType coinType = currency.getCoinType();
+        CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.ETH) {
             throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
         }
@@ -605,14 +605,14 @@ public class CryptoJ {
             throw new CryptoException("To address is invalid.");
         }
         amount = amount.stripTrailingZeros();
-        int scale = currency.getScale();
+        int scale = coin.getScale();
         RoundingMode rm = RoundingMode.DOWN;
         if (amount.setScale(scale, rm).compareTo(amount) != 0) {
             throw new CryptoException("Invalid amount scale.");
         }
         amount = amount.setScale(scale, rm);
-        if (amount.compareTo(currency.getMinValue()) < 0) {
-            throw new CryptoException("Amount is less than min " + currency.getMinValue() + " " + currency.getCode() + ".");
+        if (amount.compareTo(coin.getMinValue()) < 0) {
+            throw new CryptoException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
         }
         if (nonce.compareTo(BigInteger.ZERO) < 0) {
             throw new CryptoException("Invalid nonce. Must be greater or equal to zero.");
@@ -626,7 +626,7 @@ public class CryptoJ {
         return signEthBasedTransaction(
                 fromPrivateKey,
                 toAddress,
-                currency,
+                coin,
                 amount,
                 nonce,
                 gasPriceInETHWei,
@@ -638,18 +638,18 @@ public class CryptoJ {
     String signEthBasedTransaction(
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
-            @NonNull Currency currency,
+            @NonNull Coin coin,
             @NonNull BigDecimal amount,
             @NonNull BigInteger nonce,
             @NonNull BigInteger gasPrice,
             @NonNull BigInteger gasLimit,
             @NonNull Boolean testnet
     ) {
-        BigInteger value = amount.divide(currency.getMinValue()).toBigInteger();
+        BigInteger value = amount.divide(coin.getMinValue()).toBigInteger();
         Long chainId = testnet ? 3L : 1L;
         Credentials credentials = Credentials.create(fromPrivateKey);
         RawTransaction rawTransaction = null;
-        if (currency == Currency.ETH) {
+        if (coin == Coin.ETH) {
             rawTransaction = RawTransaction.createEtherTransaction(
                     nonce,
                     gasPrice,
@@ -666,7 +666,7 @@ public class CryptoJ {
                     nonce,
                     gasPrice,
                     null,
-                    currency.getSmartContractAddress(),
+                    coin.getSmartContractAddress(),
                     BigInteger.ZERO,
                     txData
             );

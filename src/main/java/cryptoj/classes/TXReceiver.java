@@ -19,8 +19,12 @@ public class TXReceiver {
     @NonNull String address;
     @NonNull BigDecimal amount; // absolute value, for example 0.1 BTC or 0.12345678 LTC
 
-    public TXReceiver(String address, double amount) {
+    public TXReceiver(
+            @NonNull String address,
+            @NonNull double amount
+    ) {
         this.address = address;
         this.amount = new BigDecimal(amount);
     }
+
 }

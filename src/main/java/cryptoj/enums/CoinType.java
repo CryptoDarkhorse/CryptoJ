@@ -25,8 +25,4 @@ public enum CoinType {
         this.name = name;
     }
 
-    public String getNameInLowerCase() {
-        return name.toLowerCase();
-    }
-
 }

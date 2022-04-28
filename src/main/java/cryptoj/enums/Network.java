@@ -8,7 +8,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter
 @FieldDefaults(level = PRIVATE)
 public enum Network {
-    BITCOIN(
+    BITCOIN_MAINNET(
             CoinType.BTC, true,0,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
@@ -32,7 +32,7 @@ public enum Network {
             0x045f1cf6,    // vpub
             0x045f18bc     // vprv
     ),
-    ETHEREUM(
+    ETHEREUM_MAINNET(
             CoinType.ETH, true,60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
@@ -40,7 +40,15 @@ public enum Network {
             0x04b24746,    // zpub
             0x04b2430c     // zprv
     ),
-    LITECOIN(
+    ETHEREUM_TESTNET_ROPSTEN( // todo use real values
+            CoinType.ETH, false,60,
+            "bc", 0x00, 0x05, 0x80,
+            0x0488B21E,     // xpub
+            0x0488ADE4,     // xprv
+            0x04b24746,    // zpub
+            0x04b2430c     // zprv
+    ),
+    LITECOIN_MAINNET(
             CoinType.LTC, true,2,
             "ltc", 0x30, 0x32, 0xb0,
             0x019da462,     // Ltub
