@@ -5,7 +5,22 @@ import org.bitcoinj.params.TestNet3Params;
 /**
  * Parameters for the main production network on which people trade goods and services.
  */
-public class WrappedTestNetParams extends TestNet3Params implements IWrappedNetParams{
+public class WrappedTestNetParams extends TestNet3Params implements IWrappedNetParams {
+
+    private static WrappedTestNetParams instance;
+
+    /**
+     * Get ltc main net params.
+     *
+     * @return the ltc main net params
+     */
+    public static synchronized WrappedTestNetParams get() {
+        if (instance == null) {
+            instance = new WrappedTestNetParams();
+        }
+        return instance;
+    }
+
     // Change BIP32 headers for different coins
     @Override
     public void setBIP32Headers(
@@ -28,17 +43,4 @@ public class WrappedTestNetParams extends TestNet3Params implements IWrappedNetP
         this.bip32HeaderP2WPKHpriv = p2wpkhPriv;
     }
 
-    private static WrappedTestNetParams instance;
-
-    /**
-     * Get ltc main net params.
-     *
-     * @return the ltc main net params
-     */
-    public static synchronized WrappedTestNetParams get() {
-        if (instance == null) {
-            instance = new WrappedTestNetParams();
-        }
-        return instance;
-    }
 }

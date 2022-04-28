@@ -5,7 +5,22 @@ import org.bitcoinj.params.MainNetParams;
 /**
  * Parameters for the main production network on which people trade goods and services.
  */
-public class WrappedMainNetParams extends MainNetParams implements IWrappedNetParams{
+public class WrappedMainNetParams extends MainNetParams implements IWrappedNetParams {
+
+    private static WrappedMainNetParams instance;
+
+    /**
+     * Get eth main net params.
+     *
+     * @return the eth main net params
+     */
+    public static synchronized WrappedMainNetParams get() {
+        if (instance == null) {
+            instance = new WrappedMainNetParams();
+        }
+        return instance;
+    }
+
     // Change BIP32 headers for different coins
     @Override
     public void setBIP32Headers(
@@ -28,17 +43,4 @@ public class WrappedMainNetParams extends MainNetParams implements IWrappedNetPa
         this.bip32HeaderP2WPKHpriv = p2wpkhPriv;
     }
 
-    private static WrappedMainNetParams instance;
-
-    /**
-     * Get eth main net params.
-     *
-     * @return the eth main net params
-     */
-    public static synchronized WrappedMainNetParams get() {
-        if (instance == null) {
-            instance = new WrappedMainNetParams();
-        }
-        return instance;
-    }
 }
