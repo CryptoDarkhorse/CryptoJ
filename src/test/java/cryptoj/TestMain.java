@@ -325,7 +325,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -351,7 +351,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -377,7 +377,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -403,7 +403,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -439,7 +439,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
             System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
             System.out.println(signedTx);
             System.out.println("");
@@ -470,7 +470,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
@@ -492,7 +492,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
             System.out.println(signedTx);
             System.out.println("");
@@ -514,7 +514,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
             System.out.println(signedTx);
             System.out.println("");
@@ -536,7 +536,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.generateSignedBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
             System.out.println("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");

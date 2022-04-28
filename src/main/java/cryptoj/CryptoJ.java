@@ -43,6 +43,34 @@ import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.util.*;
 
+/**
+ * Universal and easy-to-integrate java library for java/blockchain developers. By calling just
+ * one simple method you easily can:<br>
+ * <br>
+ * <li>
+ *     Generate mnemonics (seeds)
+ * </li>
+ * <li>
+ *     Generate xpubs (extened public keys / wallets)
+ *  </li>
+ *  <li>
+ *      Generate addresses and private keys
+ *  </li>
+ *  <li>
+ *      Sign and verify a text message
+ *  </li>
+ *  <li>
+ *      Prepare a signed transaction for broadcasting
+ *  </li>
+ *  <br>
+ *  <i>Note: Supports Bitcoin, Litecoin, Ethereum (mainnets + testnets)</i><br>
+ *  <br>
+ *  <strong>Donation (Bitcoin):</strong> 1LKHGTi6xCUMxwc1D85kVagdtTa8zg46Ea<br>
+ *  <strong>Donation (Ethereum & Tokens):</strong> 0xc86aa78178c160767c0003b35b287400444244f2
+ *
+ * @version 1.0
+ * @author Marek Lorenc (me.marek.lorenc@gmail.com), Jordan Cameron (c.knight8817@gmail.com)
+ */
 public class CryptoJ {
 
 
@@ -485,7 +513,7 @@ public class CryptoJ {
 
     // SECTION - SIGN TRANSACTION //
 
-    public static String generateSignedBitcoinBasedTransaction(
+    public static String signBitcoinBasedTransaction(
             @NonNull Coin coin,
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
@@ -493,7 +521,10 @@ public class CryptoJ {
     ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
-            throw new CryptoJException("This method can't be used on " + coinType.getName() + " network.");
+            throw new CryptoJException("Invalid coin type.");
+        }
+        if (coin.getNetworks().contains(network) == false) {
+            throw new CryptoJException("Invalid coin and network combination.");
         }
         for (UTXObject utxo : utxobjects) {
             utxo.setTxHash(utxo.getTxHash().replace(" ", ""));
@@ -516,24 +547,23 @@ public class CryptoJ {
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
             int scale = coin.getScale();
             RoundingMode rm = RoundingMode.DOWN;
-//            if (amount.setScale(scale, rm).compareTo(amount) == 0) {
-//                throw new CryptoException("Invalid amount scale.");
-//            }
+            if (amount.setScale(scale, rm).compareTo(amount) == 0) { // check if amount has valid scale
+                throw new CryptoJException("Invalid amount scale.");
+            }
             amount = amount.setScale(scale, rm);
-
             if (amount.compareTo(coin.getMinValue()) < 0) {
                 throw new CryptoJException("Receiver's amount " + amount + " is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
             }
             txReceiver.setAmount(amount);
         }
-        return signBTCLTCBasedTransaction(
+        return doSignBitcoinBasedTransaction(
                 network,
                 utxobjects,
                 txReceivers
         );
     }
 
-    public String generateSignedEthereumBasedTransaction(
+    public String signEthereumBasedTransaction(
             @NonNull Network network,
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
@@ -545,7 +575,10 @@ public class CryptoJ {
     ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.ETH) {
-            throw new CryptoJException("This method can't be used on " + coinType.getName() + " network.");
+            throw new CryptoJException("Invalid coin type.");
+        }
+        if (coin.getNetworks().contains(network) == false) {
+            throw new CryptoJException("Invalid coin and network combination.");
         }
         fromPrivateKey = fromPrivateKey.replace(" ", "");
         if (isPrivKeyValid(network, fromPrivateKey) == false) {
@@ -558,7 +591,7 @@ public class CryptoJ {
         amount = amount.stripTrailingZeros();
         int scale = coin.getScale();
         RoundingMode rm = RoundingMode.DOWN;
-        if (amount.setScale(scale, rm).compareTo(amount) != 0) {
+        if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
             throw new CryptoJException("Invalid amount scale.");
         }
         amount = amount.setScale(scale, rm);
@@ -574,7 +607,7 @@ public class CryptoJ {
         if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
             throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
         }
-        return signEthBasedTransaction(
+        return doSignEthereumBasedTransaction(
                 fromPrivateKey,
                 toAddress,
                 coin,
@@ -626,7 +659,7 @@ public class CryptoJ {
 
     // SECTION - PRIVATE LOCAL METHODS //
 
-    private static String signEthBasedTransaction(
+    private static String doSignEthereumBasedTransaction(
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
             @NonNull Coin coin,
@@ -674,51 +707,7 @@ public class CryptoJ {
         return Numeric.toHexString(byteArray);
     }
 
-    private static Transaction getParentTransaction(Network network, String txHash) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
-                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
-                            "\"jsonrpc\": \"2.0\",\n" +
-                            "\"method\": \"getrawtransaction\",\n" +
-                            "\"params\": [ \n" +
-                            "\"" + txHash + "\"],\n" +
-                            "\"id\": 2\n" +
-                            "}"))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(response.body());
-                String rawTransHex = node.get("result").asText();
-
-                if (rawTransHex.equals("null")) {
-                    System.err.println("Not found");
-                    return null;
-                }
-
-                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
-            } else {
-                System.err.println("Fetching failed");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * generate signed transaction which is ready to be broadcasted. It needs to support all possible AddressTypes in input/output
-     *
-     * @param network
-     * @param utxobjects
-     * @param txReceivers
-     * @return
-     * @throws CryptoJException
-     */
-    private static String signBTCLTCBasedTransaction(
+    private static String doSignBitcoinBasedTransaction(
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
@@ -791,6 +780,41 @@ public class CryptoJ {
         trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
 
         return Utils.HEX.encode(trans.bitcoinSerialize());
+    }
+
+    private static Transaction getParentTransaction(Network network, String txHash) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
+                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
+                            "\"jsonrpc\": \"2.0\",\n" +
+                            "\"method\": \"getrawtransaction\",\n" +
+                            "\"params\": [ \n" +
+                            "\"" + txHash + "\"],\n" +
+                            "\"id\": 2\n" +
+                            "}"))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(response.body());
+                String rawTransHex = node.get("result").asText();
+
+                if (rawTransHex.equals("null")) {
+                    System.err.println("Not found");
+                    return null;
+                }
+
+                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
+            } else {
+                System.err.println("Fetching failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
