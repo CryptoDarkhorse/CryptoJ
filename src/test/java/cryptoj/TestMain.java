@@ -142,7 +142,7 @@ public class TestMain {
             network = Network.BITCOIN_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 0);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 0);
             address = CryptoJ.generateAddress(network, addrType, xpub, 0);
             assertEquals(address, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W");
             assertEquals(prvKey, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq");
@@ -150,7 +150,7 @@ public class TestMain {
             network = Network.BITCOIN_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 3);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 3);
             address = CryptoJ.generateAddress(network, addrType, xpub, 3);
             assertEquals(address, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd");
             assertEquals(prvKey, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC");
@@ -158,7 +158,7 @@ public class TestMain {
             network = Network.BITCOIN_TESTNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 7);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 7);
             address = CryptoJ.generateAddress(network, addrType, xpub, 7);
             assertEquals(address, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM");
             assertEquals(prvKey, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa");
@@ -166,7 +166,7 @@ public class TestMain {
             network = Network.BITCOIN_TESTNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 5);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 5);
             address = CryptoJ.generateAddress(network, addrType, xpub, 5);
             assertEquals(address, "tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln");
             assertEquals(prvKey, "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz");
@@ -174,7 +174,7 @@ public class TestMain {
             network = Network.BITCOIN_REGTEST;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 2);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 2);
             address = CryptoJ.generateAddress(network, addrType, xpub, 2);
             assertEquals(address, "n31cruGhMj8gFJWjUNk2HdNjqw3gCSABPa");
             assertEquals(prvKey, "cQiQ1qtkzRc83ES9zn7sAJuL7LQki6qwjCsmpKX49Y63wrQyctkR");
@@ -182,7 +182,7 @@ public class TestMain {
             network = Network.BITCOIN_REGTEST;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 1);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 1);
             address = CryptoJ.generateAddress(network, addrType, xpub, 1);
             assertEquals(address, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf");
             assertEquals(prvKey, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp");
@@ -190,7 +190,7 @@ public class TestMain {
             network = Network.ETHEREUM_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 4);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 4);
             address = CryptoJ.generateAddress(network, addrType, xpub, 4);
             assertEquals(address, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB");
             assertEquals(prvKey, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81");
@@ -198,7 +198,7 @@ public class TestMain {
             network = Network.ETHEREUM_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 1);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 1);
             address = CryptoJ.generateAddress(network, addrType, xpub, 1);
             assertEquals(address, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7");
             assertEquals(prvKey, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf");
@@ -206,7 +206,7 @@ public class TestMain {
             network = Network.LITECOIN_MAINNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 9);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 9);
             address = CryptoJ.generateAddress(network, addrType, xpub, 9);
             assertEquals(address, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8");
             assertEquals(prvKey, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx");
@@ -214,7 +214,7 @@ public class TestMain {
             network = Network.LITECOIN_MAINNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 5);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 5);
             address = CryptoJ.generateAddress(network, addrType, xpub, 5);
             assertEquals(address, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4");
             assertEquals(prvKey, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy");
@@ -222,7 +222,7 @@ public class TestMain {
             network = Network.LITECOIN_TESTNET;
             addrType = AddressType.P2PKH_LEGACY;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 8);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 8);
             address = CryptoJ.generateAddress(network, addrType, xpub, 8);
             assertEquals(address, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA");
             assertEquals(prvKey, "cVdsBsrPLZsEtLxh8TQfjmdaSXDG3632zuHYBNDRDYbSvwQxwApi");
@@ -230,7 +230,7 @@ public class TestMain {
             network = Network.LITECOIN_TESTNET;
             addrType = AddressType.P2WPKH_NATIVE_SEGWIT;
             xpub = CryptoJ.generateXPub(network, addrType, mnemonic);
-            prvKey = CryptoJ.generatePrivKey(network, addrType, mnemonic, 7);
+            prvKey = CryptoJ.generatePrivateKey(network, addrType, mnemonic, 7);
             address = CryptoJ.generateAddress(network, addrType, xpub, 7);
             assertEquals(address, "tltc1qjjrmmenxx7ca7c4yhvltqqwfefllg78mf7fkda");
             assertEquals(prvKey, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45");

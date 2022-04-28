@@ -330,15 +330,15 @@ public class CryptoJ {
     // SECTION - PRIVATE KEY //
 
     /**
-     * generate private key
+     * Generate private key for an address.
      *
-     * @param network
-     * @param mnemonic
-     * @param derivationIndex
-     * @return
-     * @throws CryptoJException
+     * @param network network
+     * @param mnemonic mnemonic
+     * @param derivationIndex of the address which to generate the private key for
+     * @return private key of the address on specific derivation index
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
-    public static String generatePrivKey(
+    public static String generatePrivateKey(
             @NonNull Network network,
             @NonNull AddressType addrType,
             @NonNull String mnemonic,
@@ -346,6 +346,12 @@ public class CryptoJ {
     ) throws CryptoJException {
         if (addrType.getPurpose() < 0) {
             throw new CryptoJException("P2SH does not support HD wallet");
+        }
+        if (isMnemonicValid(mnemonic) == false) {
+            throw new CryptoJException("Invalid mnemonic");
+        }
+        if (derivationIndex < 0) {
+            throw new CryptoJException("Invalid derivation index (must be greater or equal to zero).");
         }
 
         DeterministicSeed seed;
@@ -384,55 +390,57 @@ public class CryptoJ {
         DeterministicKey key = chain.getKeyByPath(path, true);
         NetworkParameters params = getNetworkParams(network);
 
-        String encodedKey = "";
+        String privKey = "";
         switch (network.getCoinType()) {
             case BTC:
             case LTC:
-                encodedKey = key.getPrivateKeyAsWiF(params);
+                privKey = key.getPrivateKeyAsWiF(params);
                 break;
             case ETH:
-                encodedKey = "0x" + key.getPrivateKeyAsHex();
+                privKey = "0x" + key.getPrivateKeyAsHex();
                 break;
             default:
                 throw new CryptoJException("Unsupported network");
         }
-        return encodedKey;
+
+        // internal validation
+        if (isPrivKeyValid(network, privKey) == false) {
+            throw new CryptoJException("Internal validation (private key) has failed.");
+        }
+
+        return privKey;
     }
 
     /**
-     * validate privatekey (according to given attributes)
+     * Validate private key.
      *
-     * @param network
-     * @param privKey
-     * @return
-     * @throws CryptoJException
+     * @param network network
+     * @param privateKey to be validated
+     * @return true if it's valid, otherwise false
      */
     public static boolean isPrivKeyValid(
             @NonNull Network network,
-            @NonNull String privKey
-    ) throws CryptoJException {
+            @NonNull String privateKey
+    ) {
         NetworkParameters params = getNetworkParams(network);
 
         if (network.getCoinType() == CoinType.ETH) {
-            privKey = privKey.toLowerCase();
-            if (!privKey.startsWith("0x")) return false;
+            privateKey = privateKey.toLowerCase();
+            if (!privateKey.startsWith("0x")) return false;
 
             try {
-                byte[] privKeyBytes = Utils.HEX.decode(privKey.substring(2));
+                byte[] privKeyBytes = Utils.HEX.decode(privateKey.substring(2));
                 ECKey.fromPrivate(privKeyBytes);
                 return true;
             } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
                 return false;
             }
         }
 
         try {
-            DumpedPrivateKey.fromBase58(params, privKey);
+            DumpedPrivateKey.fromBase58(params, privateKey);
             return true;
         } catch (AddressFormatException ex) {
-            ex.printStackTrace();
-            System.err.println();
             return false;
         }
     }
