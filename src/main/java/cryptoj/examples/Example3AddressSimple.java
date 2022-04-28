@@ -10,21 +10,15 @@ import cryptoj.exceptions.CryptoJException;
  */
 public class Example3AddressSimple {
 
-
-
     public static void main(String[] args) throws CryptoJException {
-
         String address = CryptoJ.generateAddress(
                 Network.BITCOIN_MAINNET,
                 AddressType.P2WPKH_NATIVE_SEGWIT,
                 "zpub6t8WjYtDA4vBhFu8E2ziVCqmBURt8GWmqMZhqsQvCS8ogQ2aQedRufTpq9J2xhGyLNYHcj1vi7QQLNFYEP2XHcXstV3b5jmjZdrrrb4p4wD",
                 0
         );
-
         System.out.println("Address = " + address);
 
     }
-
-
 
 }

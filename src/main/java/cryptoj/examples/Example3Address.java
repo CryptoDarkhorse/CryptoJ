@@ -11,7 +11,6 @@ import cryptoj.exceptions.CryptoJException;
 public class Example3Address {
 
 
-
     public static void main(String[] args) throws CryptoJException {
 
         String mnemonic = CryptoJ.generateMnemonic(
@@ -52,7 +51,6 @@ public class Example3Address {
         }
 
     }
-
 
 
 }
