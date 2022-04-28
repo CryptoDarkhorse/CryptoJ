@@ -1,17 +1,15 @@
-package org.example.cryptotoolprojectdescription.enums;
+package cryptoj.enums;
 
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import static org.example.cryptotoolprojectdescription.enums.CoinType.*;
-
 @Getter
 @FieldDefaults(level = PRIVATE)
 public enum Network {
     BITCOIN(
-            BTC, true,0,
+            CoinType.BTC, true,0,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv
@@ -19,7 +17,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     BITCOIN_TESTNET(
-            BTC, false,1,
+            CoinType.BTC, false,1,
             "tb", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv
@@ -27,7 +25,7 @@ public enum Network {
             0x045f18bc     // vprv
     ),
     BITCOIN_REGTEST(
-            BTC, false,1,
+            CoinType.BTC, false,1,
             "bcrt", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv
@@ -35,7 +33,7 @@ public enum Network {
             0x045f18bc     // vprv
     ),
     ETHEREUM(
-            ETH, true,60,
+            CoinType.ETH, true,60,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv
@@ -43,7 +41,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     LITECOIN(
-            LTC, true,2,
+            CoinType.LTC, true,2,
             "ltc", 0x30, 0x32, 0xb0,
             0x019da462,     // Ltub
             0x019d9cfe,     // Ltpv
@@ -51,7 +49,7 @@ public enum Network {
             0x04b2430c     // zprv
     ),
     LITECOIN_TESTNET(
-            LTC, false,1,
+            CoinType.LTC, false,1,
             "tltc", 0x6f, 0xc4, 0xef,
             0x043587cf,     // tpub
             0x04358394,     // tprv

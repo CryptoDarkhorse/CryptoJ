@@ -1,4 +1,4 @@
-package org.example.cryptotoolprojectdescription.enums;
+package cryptoj.enums;
 
 import lombok.Getter;
 import lombok.NonNull;

@@ -1,4 +1,4 @@
-package org.example.cryptotoolprojectdescription.classes;
+package cryptoj.classes;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

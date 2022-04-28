@@ -1,11 +1,11 @@
-package org.example.cryptotoolprojectdescription.network;
+package cryptoj.network;
 
-import org.bitcoinj.params.TestNet3Params;
+import org.bitcoinj.params.MainNetParams;
 
 /**
  * Parameters for the main production network on which people trade goods and services.
  */
-public class WrappedTestNetParams extends TestNet3Params implements IWrappedNetParams{
+public class WrappedMainNetParams extends MainNetParams implements IWrappedNetParams{
     // Change BIP32 headers for different coins
     @Override
     public void setBIP32Headers(
@@ -28,16 +28,16 @@ public class WrappedTestNetParams extends TestNet3Params implements IWrappedNetP
         this.bip32HeaderP2WPKHpriv = p2wpkhPriv;
     }
 
-    private static WrappedTestNetParams instance;
+    private static WrappedMainNetParams instance;
 
     /**
-     * Get ltc main net params.
+     * Get eth main net params.
      *
-     * @return the ltc main net params
+     * @return the eth main net params
      */
-    public static synchronized WrappedTestNetParams get() {
+    public static synchronized WrappedMainNetParams get() {
         if (instance == null) {
-            instance = new WrappedTestNetParams();
+            instance = new WrappedMainNetParams();
         }
         return instance;
     }

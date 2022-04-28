@@ -1,4 +1,4 @@
-package org.example.cryptotoolprojectdescription.network;
+package cryptoj.network;
 
 public interface IWrappedNetParams {
     public void setBIP32Headers(

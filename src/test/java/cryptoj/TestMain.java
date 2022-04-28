@@ -1,11 +1,11 @@
-package org.example.cryptotoolprojectdescription;
+package cryptoj;
 
-import org.example.cryptotoolprojectdescription.classes.TXReceiver;
-import org.example.cryptotoolprojectdescription.classes.UTXObject;
-import org.example.cryptotoolprojectdescription.enums.AddressType;
-import org.example.cryptotoolprojectdescription.enums.Currency;
-import org.example.cryptotoolprojectdescription.enums.Network;
-import org.example.cryptotoolprojectdescription.exceptions.CryptoException;
+import cryptoj.classes.TXReceiver;
+import cryptoj.classes.UTXObject;
+import cryptoj.enums.AddressType;
+import cryptoj.enums.Currency;
+import cryptoj.enums.Network;
+import cryptoj.exceptions.CryptoException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

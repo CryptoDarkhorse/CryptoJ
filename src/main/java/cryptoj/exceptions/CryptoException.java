@@ -1,4 +1,4 @@
-package org.example.cryptotoolprojectdescription.exceptions;
+package cryptoj.exceptions;
 
 public class CryptoException extends Exception {
 
