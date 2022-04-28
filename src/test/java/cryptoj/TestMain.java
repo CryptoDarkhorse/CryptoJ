@@ -277,36 +277,32 @@ public class TestMain {
     @Test
     @DisplayName("Test address validity")
     void testAddress() {
-        try {
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "1N2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvj2lldnd8g7nc3smd"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_TESTNET, "tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "n31cruGhMj8gFJWjUNk2HdNjqw3gCSABPa"));
-            assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "n31cruGhMj8gFJWjUNk2HdNjqw3gCSABPa"));
+        assertTrue(CryptoJ.isAddressValid(Network.BITCOIN_REGTEST, "bcrt1qy9tr0sl96y4nt2y6axaq7ca5ajm7zma9caacuf"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB"));
-            assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7"));
+        assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "0xCea857A7b2F1efA2666D0915Fa66808bd4a5E7BB"));
+        assertTrue(CryptoJ.isAddressValid(Network.ETHEREUM_MAINNET, "bc1qlwl8qdrk26q839exs54yu2v85mls2qe9fp4ad7"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8"));
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "LMd632NKqw44qKmqUEK6pt8nYfTsG7xQC8"));
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
 
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
-            assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95"));
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95"));
 
-            // invalid key - containing invalid character - I
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
-            // invalid key - checksum validation failed - some characters removed
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvldnd8g7nc3smd"));
-            // invalid key - invalid network - address should be TESTNET
-            assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
+        // invalid key - containing invalid character - I
+        assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
+        // invalid key - checksum validation failed - some characters removed
+        assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "bc1qqkhc9mjkw0rr6n5xechhnvldnd8g7nc3smd"));
+        // invalid key - invalid network - address should be TESTNET
+        assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
 
-            // TODO: ... add some test cases
-        } catch (CryptoJException e) {
-            assertTrue(false, "Unexpected exception");
-        }
+        // TODO: ... add some test cases
     }
 
     @Test
