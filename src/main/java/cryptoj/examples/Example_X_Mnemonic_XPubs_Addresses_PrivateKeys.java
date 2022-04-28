@@ -1,4 +1,4 @@
-package cryptoj.examples.advanced;
+package cryptoj.examples;
 
 import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
@@ -6,16 +6,14 @@ import cryptoj.enums.Network;
 import cryptoj.exceptions.CryptoJException;
 
 /**
- * Generate all possible xPubs and addresses (for all networks and address types) from one random mnemonic.
+ * Generate all possible xPubs and addresses with their private keys (for all networks and address types) from one random mnemonic.
  */
-public class AdvancedExample3Address {
+public class Example_X_Mnemonic_XPubs_Addresses_PrivateKeys {
 
 
     public static void main(String[] args) throws CryptoJException {
 
-        String mnemonic = CryptoJ.generateMnemonic(
-                AdvancedExample1Mnemonic.getRandomMnemonicLength()
-        );
+        String mnemonic = CryptoJ.generateMnemonic(12);
 
         System.out.println("MNEMONIC = " + mnemonic + "\n\n\n");
 
@@ -42,7 +40,13 @@ public class AdvancedExample3Address {
                             xPub,
                             addressDerivationIndex
                     );
-                    System.out.println("Address (on index: " + addressDerivationIndex + ") = " + address);
+                    String privateKey = CryptoJ.generatePrivateKey(
+                            network,
+                            addressType,
+                            mnemonic,
+                            addressDerivationIndex
+                    );
+                    System.out.println("Address (on index: " + addressDerivationIndex + ") = " + address + " ; PrivateKey = " + privateKey);
                 }
 
                 System.out.println("\n\n\n");
