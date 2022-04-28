@@ -449,20 +449,34 @@ public class CryptoJ {
 
     // SECTION - SIGN & VERIFY A TEXT MESSAGE //
 
-    // todo implement please
-    public static String signTextMessage(
-            @NonNull String textMessage,
+    /**
+     * Signs (encrypts) any raw text message using specific private key.
+     *
+     * @param rawMessage to be signed
+     * @param privateKey to use to sign the raw message
+     * @return signed (encrypted) message
+     */
+    public static String signMessage(
+            @NonNull String rawMessage,
             @NonNull String privateKey
     ) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
     }
 
-    // todo implement please
-    public static String verifyTextMessage(
-            @NonNull String textMessage,
+    /**
+     * Verify (decrypts) a signed (encrypted) message using specific address
+     * in purpose to verify that the message was signed (decrypted) by real
+     * true owner of the address without revealing relevant private key of the address.
+     *
+     * @param signedMessage to be verified (decrypted)
+     * @param address to use to verify (decrypt) the signed (encrypted) message
+     * @return the original raw message
+     */
+    public static String verifyMessage(
+            @NonNull String signedMessage,
             @NonNull String address
     ) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
     }
 
 
