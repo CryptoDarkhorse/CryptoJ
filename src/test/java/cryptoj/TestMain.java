@@ -84,40 +84,39 @@ public class TestMain {
              * Test function isXPubValid
              */
             Network network = Network.BITCOIN_MAINNET;
-            AddressType addrType = AddressType.P2PKH_LEGACY;
             boolean isValid = false;
 
             // Test cases from BIP32
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8");
             assertTrue(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB");
             assertTrue(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcEZVB4dScxMAdx6d4nFc9nvyvH3v4gJL378CSRZiYmhRoP7mBy6gSPSCYk6SzXPTf3ND1cZAceL7SfJ1Z3GC8vBgp2epUt13");
             assertTrue(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa");
             assertTrue(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "zpub6r5kw6MCdkevJCZ5XN7crPMKLKJhmh4Dk8eZPDXXwhaoSBDixyrJWu7Juwd5YdjdqZ15j1LCuGxQvZ6NVayNbLe5rvMUuHHs1JE8hxvimPn");
             assertTrue(isValid);
 
             // invalid xpubKeys
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6LBpB85b3D2yc8sfvZU521AAwdZafEz7mnzBBsz4wKY5fTtTQBm");
             assertFalse(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6Txnt3siSujt9RCVYsx4qHZGc62TG4McvMGcAUjeuwZdduYEvFn");
             assertFalse(isValid);
 
-            isValid = CryptoJ.isXPubValid(network, addrType,
+            isValid = CryptoJ.isXPubValid(network,
                     "xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6N8ZMMXctdiCjxTNq964yKkwrkBJJwpzZS4HS2fxvyYUA4q2Xe4");
             assertFalse(isValid);
         } catch (CryptoJException e) {

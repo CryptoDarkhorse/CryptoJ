@@ -22,7 +22,6 @@ import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.UnreadableWalletException;
-import org.jetbrains.annotations.NotNull;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -48,11 +47,11 @@ import java.util.List;
 public class CryptoJ {
 
     /**
-     * Generate valid mnemonic
+     * Generate valid mnemonic.
      *
      * @param length min value 12, max value 24, multiply of 3
      * @return mnemonic phrase made of words
-     * @throws CryptoJException if length is invalid or internal validation fails
+     * @throws CryptoJException if given attributes are invalid or internal validation fails
      */
     public static String generateMnemonic(
             @NonNull Integer length
@@ -65,7 +64,7 @@ public class CryptoJ {
         int entropyLen = length * 11 - checkSumLen;
 
         // Generate deterministic seed
-        DeterministicSeed seed = new DeterministicSeed(new SecureRandom(), entropyLen, "");
+        DeterministicSeed seed = new DeterministicSeed(new SecureRandom(), entropyLen, ""); // todo we should support passphrase (also in xpub, privKeys etc) as nullable attribute to upgrade the security in case if user wants to use it
 
         // Get mnemonic from seed
         List<String> words = seed.getMnemonicCode();
@@ -75,22 +74,21 @@ public class CryptoJ {
 
         // internal validation
         if (isMnemonicValid(mnemonic) == false) {
-            throw new CryptoJException("Internal validation has failed.");
+            throw new CryptoJException("Internal validation (mnemonic) has failed.");
         }
 
         return mnemonic;
     }
 
     /**
-     * Validate mnemonic
+     * Validate mnemonic.
      *
      * @param mnemonic phrase made of words
-     * @return true if mnemonic is valid, otherwise false
-     * @throws CryptoJException
+     * @return true if it's valid, otherwise false
      */
     public static boolean isMnemonicValid(
             @NonNull String mnemonic
-    ) throws CryptoJException {
+    ) {
         // Split mnemonic string by space
         List<String> words = Splitter.on(' ').splitToList(mnemonic);
 
@@ -103,6 +101,12 @@ public class CryptoJ {
         }
     }
 
+    /**
+     * Get network parameters.
+     *
+     * @param network from which to get network parameters
+     * @return network parameters
+     */
     public static NetworkParameters getNetworkParams(Network network) {
         IWrappedNetParams wrappedParams = null;
         NetworkParameters params = null;
@@ -130,12 +134,13 @@ public class CryptoJ {
     }
 
     /**
-     * Generate extended public key for relevant network, nettype, and address type from given mnemonic
-     * @param network
-     * @param addrType
-     * @param mnemonic
+     * Generate extended public key from given attributes.
+     *
+     * @param network network
+     * @param addrType address type
+     * @param mnemonic phrase made of words
      * @return extened public key
-     * @throws CryptoJException
+     * @throws CryptoJException if given attributes are invalid or internal validation fails
      *
      * Note: Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
      *       However, this is only difference of notation, and results are same.
@@ -144,11 +149,14 @@ public class CryptoJ {
      */
     public static String generateXPub(
             @NonNull Network network,
-            @NotNull AddressType addrType,
+            @NonNull AddressType addrType,
             @NonNull String mnemonic
     ) throws CryptoJException {
         if (addrType.getPurpose() < 0) {
             throw new CryptoJException("P2SH does not support HD wallet");
+        }
+        if (isMnemonicValid(mnemonic) == false) {
+            throw new CryptoJException("Mnemonic is not valid.");
         }
 
         DeterministicSeed seed;
@@ -185,29 +193,32 @@ public class CryptoJ {
 
         NetworkParameters params = getNetworkParams(network);
 
-        String encodedKey = "";
+        String xPub = "";
         if (addrType.equals(AddressType.P2PKH_LEGACY)) {
-            encodedKey = key.serializePubB58(params, Script.ScriptType.P2PKH);
+            xPub = key.serializePubB58(params, Script.ScriptType.P2PKH);
         } else {
-            encodedKey = key.serializePubB58(params, Script.ScriptType.P2WPKH);
+            xPub = key.serializePubB58(params, Script.ScriptType.P2WPKH);
         }
 
-        return encodedKey;
+        // internal validation
+        if (isXPubValid(network, xPub) == false) {
+            throw new CryptoJException("Internal validation (xPub) has failed.");
+        }
+
+        return xPub;
     }
 
     /**
-     * Check if xpub is valid (according to given attributes)
+     * Validate xPub.
      *
-     * @param network
-     * @param xPub
-     * @return
-     * @throws CryptoJException
+     * @param network network
+     * @param xPub xPub
+     * @return true if it's valid, otherwise false
      */
     public static boolean isXPubValid(
             @NonNull Network network,
-            @NotNull AddressType addrType,
             @NonNull String xPub
-    ) throws CryptoJException {
+    ) {
         NetworkParameters params = getNetworkParams(network);
 
         try {
@@ -342,7 +353,7 @@ public class CryptoJ {
             @NonNull String xPub,
             @NonNull int derivationIndex
     ) throws CryptoJException {
-        if (!isXPubValid(network, addrType, xPub)) {
+        if (!isXPubValid(network, xPub)) {
             throw new CryptoJException("Invalid xpub");
         }
 
