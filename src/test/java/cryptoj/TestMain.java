@@ -5,7 +5,7 @@ import cryptoj.classes.UTXObject;
 import cryptoj.enums.AddressType;
 import cryptoj.enums.Coin;
 import cryptoj.enums.Network;
-import cryptoj.exceptions.CryptoException;
+import cryptoj.exceptions.CryptoJException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ public class TestMain {
 
             String validMnemonic = "clap shove riot taxi vessel achieve echo swift ripple blush rate census sick exit dry make adult swing";
             assertTrue(CryptoJ.isMnemonicValid(validMnemonic));
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
             assertTrue(false, "Invalid CryptoException catched");
         }
@@ -120,7 +120,7 @@ public class TestMain {
             isValid = CryptoJ.isXPubValid(network, addrType,
                     "xpub661MyMwAqRbcEYS8w7XLSVeEsBXy79zSzH1J8vCdxAZningWLdN3zgtU6N8ZMMXctdiCjxTNq964yKkwrkBJJwpzZS4HS2fxvyYUA4q2Xe4");
             assertFalse(isValid);
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
             assertTrue(false, "Invalid CryptoException catched");
         }
@@ -235,7 +235,7 @@ public class TestMain {
             address = CryptoJ.generateAddress(network, addrType, xpub, 7);
             assertEquals(address, "tltc1qjjrmmenxx7ca7c4yhvltqqwfefllg78mf7fkda");
             assertEquals(prvKey, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             assertTrue(false, "Unexpected exception");
         }
     }
@@ -270,7 +270,7 @@ public class TestMain {
             assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
 
             // TODO: ... add some test cases
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             assertTrue(false, "Unexpected exception");
         }
     }
@@ -305,7 +305,7 @@ public class TestMain {
             assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "n3dJrXNo4ujsbDj7Qt4KGEHd4Sog4eg1rM"));
 
             // TODO: ... add some test cases
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             assertTrue(false, "Unexpected exception");
         }
     }
@@ -341,7 +341,7 @@ public class TestMain {
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -367,7 +367,7 @@ public class TestMain {
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -393,7 +393,7 @@ public class TestMain {
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -419,7 +419,7 @@ public class TestMain {
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -452,7 +452,7 @@ public class TestMain {
             System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
     }
@@ -483,7 +483,7 @@ public class TestMain {
             System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -505,7 +505,7 @@ public class TestMain {
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -527,7 +527,7 @@ public class TestMain {
             System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
@@ -549,7 +549,7 @@ public class TestMain {
             System.out.println("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
-        } catch (CryptoException e) {
+        } catch (CryptoJException e) {
             e.printStackTrace();
         }
     }

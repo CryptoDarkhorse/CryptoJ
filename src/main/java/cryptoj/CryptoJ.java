@@ -9,7 +9,7 @@ import cryptoj.enums.AddressType;
 import cryptoj.enums.Coin;
 import cryptoj.enums.CoinType;
 import cryptoj.enums.Network;
-import cryptoj.exceptions.CryptoException;
+import cryptoj.exceptions.CryptoJException;
 import cryptoj.network.IWrappedNetParams;
 import cryptoj.network.WrappedMainNetParams;
 import cryptoj.network.WrappedTestNetParams;
@@ -48,18 +48,18 @@ import java.util.List;
 public class CryptoJ {
 
     /**
-     * Generate valid mnemonic (seed) (according to given attributes)
+     * Generate valid mnemonic
      *
-     * @param length for example 12
-     * @return mnemonic
-     * @throws CryptoException if something goes wrong
+     * @param length min value 12, max value 24, multiply of 3
+     * @return mnemonic phrase made of words
+     * @throws CryptoJException if length is invalid or internal validation fails
      */
     public static String generateMnemonic(
             @NonNull Integer length
-    ) throws CryptoException {
+    ) throws CryptoJException {
         // check word length
         if (length < 12 || length > 24 || length % 3 > 0)
-            throw new CryptoException("Invalid word length: it must be between 12 and 24, and multiple of 3");
+            throw new CryptoJException("Invalid word length: it must be between 12 and 24, and multiple of 3");
 
         int checkSumLen = length / 3;
         int entropyLen = length * 11 - checkSumLen;
@@ -73,19 +73,24 @@ public class CryptoJ {
         // Concat word list
         String mnemonic = String.join(" ", words);
 
+        // internal validation
+        if (isMnemonicValid(mnemonic) == false) {
+            throw new CryptoJException("Internal validation has failed.");
+        }
+
         return mnemonic;
     }
 
     /**
-     * validate if mnemonic (seed) is ok (according to given attributes)
+     * Validate mnemonic
      *
-     * @param mnemonic seed
-     * @return true if mnemonic is ok, otherwise false
-     * @throws CryptoException
+     * @param mnemonic phrase made of words
+     * @return true if mnemonic is valid, otherwise false
+     * @throws CryptoJException
      */
     public static boolean isMnemonicValid(
             @NonNull String mnemonic
-    ) throws CryptoException {
+    ) throws CryptoJException {
         // Split mnemonic string by space
         List<String> words = Splitter.on(' ').splitToList(mnemonic);
 
@@ -94,7 +99,6 @@ public class CryptoJ {
             MnemonicCode.INSTANCE.check(words);
             return true;
         } catch (MnemonicException e) {
-            e.printStackTrace();
             return false;
         }
     }
@@ -131,7 +135,7 @@ public class CryptoJ {
      * @param addrType
      * @param mnemonic
      * @return extened public key
-     * @throws CryptoException
+     * @throws CryptoJException
      *
      * Note: Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
      *       However, this is only difference of notation, and results are same.
@@ -142,16 +146,16 @@ public class CryptoJ {
             @NonNull Network network,
             @NotNull AddressType addrType,
             @NonNull String mnemonic
-    ) throws CryptoException {
+    ) throws CryptoJException {
         if (addrType.getPurpose() < 0) {
-            throw new CryptoException("P2SH does not support HD wallet");
+            throw new CryptoJException("P2SH does not support HD wallet");
         }
 
         DeterministicSeed seed;
         try {
             seed = new DeterministicSeed(mnemonic, null, "", 0);
         } catch (UnreadableWalletException e) {
-            throw new CryptoException("Invalid mnemonic");
+            throw new CryptoJException("Invalid mnemonic");
         }
 
         /**
@@ -197,13 +201,13 @@ public class CryptoJ {
      * @param network
      * @param xPub
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static boolean isXPubValid(
             @NonNull Network network,
             @NotNull AddressType addrType,
             @NonNull String xPub
-    ) throws CryptoException {
+    ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
         try {
@@ -222,23 +226,23 @@ public class CryptoJ {
      * @param mnemonic
      * @param derivationIndex
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static String generatePrivKey(
             @NonNull Network network,
             @NonNull AddressType addrType,
             @NonNull String mnemonic,
             @NonNull int derivationIndex
-    ) throws CryptoException {
+    ) throws CryptoJException {
         if (addrType.getPurpose() < 0) {
-            throw new CryptoException("P2SH does not support HD wallet");
+            throw new CryptoJException("P2SH does not support HD wallet");
         }
 
         DeterministicSeed seed;
         try {
             seed = new DeterministicSeed(mnemonic, null, "", 0);
         } catch (UnreadableWalletException e) {
-            throw new CryptoException("Invalid mnemonic");
+            throw new CryptoJException("Invalid mnemonic");
         }
 
         /**
@@ -280,7 +284,7 @@ public class CryptoJ {
                 encodedKey = "0x" + key.getPrivateKeyAsHex();
                 break;
             default:
-                throw new CryptoException("Unsupported network");
+                throw new CryptoJException("Unsupported network");
         }
         return encodedKey;
     }
@@ -291,12 +295,12 @@ public class CryptoJ {
      * @param network
      * @param privKey
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static boolean isPrivKeyValid(
             @NonNull Network network,
             @NonNull String privKey
-    ) throws CryptoException {
+    ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
         if (network.getCoinType() == CoinType.ETH) {
@@ -330,16 +334,16 @@ public class CryptoJ {
      * @param xPub
      * @param derivationIndex
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static String generateAddress(
             @NonNull Network network,
             @NonNull AddressType addrType,
             @NonNull String xPub,
             @NonNull int derivationIndex
-    ) throws CryptoException {
+    ) throws CryptoJException {
         if (!isXPubValid(network, addrType, xPub)) {
-            throw new CryptoException("Invalid xpub");
+            throw new CryptoJException("Invalid xpub");
         }
 
         NetworkParameters params = getNetworkParams(network);
@@ -359,9 +363,9 @@ public class CryptoJ {
                 scryptType = Script.ScriptType.P2WPKH;
                 break;
             case P2SH_PAY_TO_SCRIPT_HASH:
-                throw new CryptoException("P2SH does not support HD wallet");
+                throw new CryptoJException("P2SH does not support HD wallet");
             default:
-                throw new CryptoException("Unsupported address type");
+                throw new CryptoJException("Unsupported address type");
         }
 
         Address address = Address.fromKey(params, key, scryptType);
@@ -379,7 +383,7 @@ public class CryptoJ {
                 encodedAddress = address.toString();
                 break;
             default:
-                throw new CryptoException("Unsupported network");
+                throw new CryptoJException("Unsupported network");
         }
         return encodedAddress;
     }
@@ -390,12 +394,12 @@ public class CryptoJ {
      * @param network
      * @param address
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static boolean isAddressValid(
             @NonNull Network network,
             @NonNull String address
-    ) throws CryptoException {
+    ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
         if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
@@ -455,13 +459,13 @@ public class CryptoJ {
      * @param utxobjects
      * @param txReceivers
      * @return
-     * @throws CryptoException
+     * @throws CryptoJException
      */
     public static String signBTCLTCBasedTransaction(
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
-    ) throws CryptoException {
+    ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
         Context.getOrCreate(params);
@@ -477,7 +481,7 @@ public class CryptoJ {
             Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
 
             if (prevTrans == null) {
-                throw new CryptoException("Failed to get UTXO info from blockchain");
+                throw new CryptoJException("Failed to get UTXO info from blockchain");
             }
 
             trans.addInput(prevTrans.getOutput(utxo.getIndex()));
@@ -515,7 +519,7 @@ public class CryptoJ {
                 input.setWitness((TransactionWitness)null);
             } else {
                 if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
-                    throw new CryptoException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
+                    throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
                 }
 
                 Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
@@ -539,28 +543,28 @@ public class CryptoJ {
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
             @NonNull TXReceiver[] txReceivers
-    ) throws CryptoException {
+    ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
-            throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
+            throw new CryptoJException("This method can't be used on " + coinType.getName() + " network.");
         }
         for (UTXObject utxo : utxobjects) {
             utxo.setTxHash(utxo.getTxHash().replace(" ", ""));
             if (utxo.getTxHash().isEmpty()) {
-                throw new CryptoException("Invalid UTXO txHash.");
+                throw new CryptoJException("Invalid UTXO txHash.");
             }
             if (utxo.getIndex() < 0) {
-                throw new CryptoException("Invalid UTXO index.");
+                throw new CryptoJException("Invalid UTXO index.");
             }
             utxo.setPrivKey(utxo.getPrivKey().replace(" ", ""));
             if (isPrivKeyValid(network, utxo.getPrivKey()) == false) {
-                throw new CryptoException("Sender's private key " + utxo.getPrivKey() + " for TxId=" + utxo.getTxHash() + " Index=" + utxo.getIndex() + " is invalid.");
+                throw new CryptoJException("Sender's private key " + utxo.getPrivKey() + " for TxId=" + utxo.getTxHash() + " Index=" + utxo.getIndex() + " is invalid.");
             }
         }
         for (TXReceiver txReceiver : txReceivers) {
             txReceiver.setAddress(txReceiver.getAddress().replace(" ", ""));
             if (isAddressValid(network, txReceiver.getAddress()) == false) {
-                throw new CryptoException("Receiver's address " + txReceiver.getAddress() + " is invalid.");
+                throw new CryptoJException("Receiver's address " + txReceiver.getAddress() + " is invalid.");
             }
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
             int scale = coin.getScale();
@@ -571,7 +575,7 @@ public class CryptoJ {
             amount = amount.setScale(scale, rm);
 
             if (amount.compareTo(coin.getMinValue()) < 0) {
-                throw new CryptoException("Receiver's amount " + amount + " is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
+                throw new CryptoJException("Receiver's amount " + amount + " is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
             }
             txReceiver.setAmount(amount);
         }
@@ -591,37 +595,37 @@ public class CryptoJ {
             @NonNull BigInteger nonce,
             @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
             @NonNull BigInteger gasLimitInUnits // for example 20000
-    ) throws CryptoException {
+    ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.ETH) {
-            throw new CryptoException("This method can't be used on " + coinType.getName() + " network.");
+            throw new CryptoJException("This method can't be used on " + coinType.getName() + " network.");
         }
         fromPrivateKey = fromPrivateKey.replace(" ", "");
         if (isPrivKeyValid(network, fromPrivateKey) == false) {
-            throw new CryptoException("Private key is invalid.");
+            throw new CryptoJException("Private key is invalid.");
         }
         toAddress = toAddress.replace(" ", "");
         if (isAddressValid(network, toAddress) == false) {
-            throw new CryptoException("To address is invalid.");
+            throw new CryptoJException("To address is invalid.");
         }
         amount = amount.stripTrailingZeros();
         int scale = coin.getScale();
         RoundingMode rm = RoundingMode.DOWN;
         if (amount.setScale(scale, rm).compareTo(amount) != 0) {
-            throw new CryptoException("Invalid amount scale.");
+            throw new CryptoJException("Invalid amount scale.");
         }
         amount = amount.setScale(scale, rm);
         if (amount.compareTo(coin.getMinValue()) < 0) {
-            throw new CryptoException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
+            throw new CryptoJException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
         }
         if (nonce.compareTo(BigInteger.ZERO) < 0) {
-            throw new CryptoException("Invalid nonce. Must be greater or equal to zero.");
+            throw new CryptoJException("Invalid nonce. Must be greater or equal to zero.");
         }
         if (gasPriceInETHWei.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoException("Invalid gas price in wei. Must be greater than zero.");
+            throw new CryptoJException("Invalid gas price in wei. Must be greater than zero.");
         }
         if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoException("Invalid gas limit in units. Must be greater than zero.");
+            throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
         }
         return signEthBasedTransaction(
                 fromPrivateKey,
