@@ -1,4 +1,4 @@
-package cryptoj.examples;
+package cryptoj.examples.advanced;
 
 import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
@@ -8,13 +8,13 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate all possible xPubs and addresses (for all networks and address types) from one random mnemonic.
  */
-public class Example3Address {
+public class AdvancedExample3Address {
 
 
     public static void main(String[] args) throws CryptoJException {
 
         String mnemonic = CryptoJ.generateMnemonic(
-                Example1Mnemonic.getRandomMnemonicLength()
+                AdvancedExample1Mnemonic.getRandomMnemonicLength()
         );
 
         System.out.println("MNEMONIC = " + mnemonic + "\n\n\n");

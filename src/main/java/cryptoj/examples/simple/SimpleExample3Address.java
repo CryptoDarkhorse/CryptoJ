@@ -1,4 +1,4 @@
-package cryptoj.examples;
+package cryptoj.examples.simple;
 
 import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
@@ -8,7 +8,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate address for receiving coins
  */
-public class Example3AddressSimple {
+public class SimpleExample3Address {
 
     public static void main(String[] args) throws CryptoJException {
         String address = CryptoJ.generateAddress(

@@ -1,4 +1,4 @@
-package cryptoj.examples;
+package cryptoj.examples.advanced;
 
 import cryptoj.CryptoJ;
 import cryptoj.exceptions.CryptoJException;
@@ -6,7 +6,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate random valid mnemonics with random length
  */
-public class Example1Mnemonic {
+public class AdvancedExample1Mnemonic {
 
     public static void main(String[] args) throws CryptoJException {
         int howManyMnemonic = 10;

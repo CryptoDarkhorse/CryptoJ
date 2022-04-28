@@ -1,4 +1,4 @@
-package cryptoj.examples;
+package cryptoj.examples.simple;
 
 import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
@@ -8,7 +8,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate xPub
  */
-public class Example2XPubSimple {
+public class SimpleExample2XPub {
 
     public static void main(String[] args) throws CryptoJException {
         String xPub = CryptoJ.generateXPub(
