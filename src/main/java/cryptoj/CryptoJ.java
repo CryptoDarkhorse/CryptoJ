@@ -135,7 +135,7 @@ public class CryptoJ {
     // SECTION - XPUB //
 
     /**
-     * Generate extended public key.<br>
+     * Generate xPub (extended public key).<br>
      * <br>
      * <strong>Note:</strong> Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
      * However, this is only difference of notation, and results are same.
@@ -210,7 +210,7 @@ public class CryptoJ {
     }
 
     /**
-     * Validate xPub.
+     * Validate xPub (extended public key).
      *
      * @param network network
      * @param xPub    xPub to be validated
@@ -556,6 +556,65 @@ public class CryptoJ {
         );
     }
 
+    public String signEthereumBasedTransaction(
+            @NonNull Network network,
+            @NonNull String fromPrivateKey,
+            @NonNull String toAddress,
+            @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
+            @NonNull Coin coin,
+            @NonNull BigInteger nonce,
+            @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
+            @NonNull BigInteger gasLimitInUnits // for example 20000
+    ) throws CryptoJException {
+        CoinType coinType = coin.getCoinType();
+        if (coinType != CoinType.ETH) {
+            throw new CryptoJException("Invalid coin type.");
+        }
+        if (coin.getNetworks().contains(network) == false) {
+            throw new CryptoJException("Invalid coin and network combination.");
+        }
+        fromPrivateKey = fromPrivateKey.replace(" ", "");
+        if (isPrivKeyValid(network, fromPrivateKey) == false) {
+            throw new CryptoJException("Private key is invalid.");
+        }
+        toAddress = toAddress.replace(" ", "");
+        if (isAddressValid(network, toAddress) == false) {
+            throw new CryptoJException("To address is invalid.");
+        }
+        amount = amount.stripTrailingZeros();
+        int scale = coin.getScale();
+        RoundingMode rm = RoundingMode.DOWN;
+        if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
+            throw new CryptoJException("Invalid amount scale.");
+        }
+        amount = amount.setScale(scale, rm);
+        if (amount.compareTo(coin.getMinValue()) < 0) {
+            throw new CryptoJException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
+        }
+        if (nonce.compareTo(BigInteger.ZERO) < 0) {
+            throw new CryptoJException("Invalid nonce. Must be greater or equal to zero.");
+        }
+        if (gasPriceInETHWei.compareTo(BigInteger.ZERO) <= 0) {
+            throw new CryptoJException("Invalid gas price in wei. Must be greater than zero.");
+        }
+        if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
+            throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
+        }
+        return doSignEthereumBasedTransaction(
+                fromPrivateKey,
+                toAddress,
+                coin,
+                amount,
+                nonce,
+                gasPriceInETHWei,
+                gasLimitInUnits,
+                !network.isMainNet()
+        );
+    }
+
+
+    // SECTION - OTHERS //
+
     /**
      * Get network parameters.
      *
@@ -589,7 +648,7 @@ public class CryptoJ {
     }
 
 
-    // SECTION - OTHERS //
+    // SECTION - PRIVATE LOCAL METHODS //
 
     private static String doSignEthereumBasedTransaction(
             @NonNull String fromPrivateKey,
@@ -638,9 +697,6 @@ public class CryptoJ {
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
     }
-
-
-    // SECTION - PRIVATE LOCAL METHODS //
 
     private static String doSignBitcoinBasedTransaction(
             @NonNull Network network,
@@ -759,62 +815,6 @@ public class CryptoJ {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public String signEthereumBasedTransaction(
-            @NonNull Network network,
-            @NonNull String fromPrivateKey,
-            @NonNull String toAddress,
-            @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
-            @NonNull Coin coin,
-            @NonNull BigInteger nonce,
-            @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
-            @NonNull BigInteger gasLimitInUnits // for example 20000
-    ) throws CryptoJException {
-        CoinType coinType = coin.getCoinType();
-        if (coinType != CoinType.ETH) {
-            throw new CryptoJException("Invalid coin type.");
-        }
-        if (coin.getNetworks().contains(network) == false) {
-            throw new CryptoJException("Invalid coin and network combination.");
-        }
-        fromPrivateKey = fromPrivateKey.replace(" ", "");
-        if (isPrivKeyValid(network, fromPrivateKey) == false) {
-            throw new CryptoJException("Private key is invalid.");
-        }
-        toAddress = toAddress.replace(" ", "");
-        if (isAddressValid(network, toAddress) == false) {
-            throw new CryptoJException("To address is invalid.");
-        }
-        amount = amount.stripTrailingZeros();
-        int scale = coin.getScale();
-        RoundingMode rm = RoundingMode.DOWN;
-        if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
-            throw new CryptoJException("Invalid amount scale.");
-        }
-        amount = amount.setScale(scale, rm);
-        if (amount.compareTo(coin.getMinValue()) < 0) {
-            throw new CryptoJException("Amount is less than min " + coin.getMinValue() + " " + coin.getCode() + ".");
-        }
-        if (nonce.compareTo(BigInteger.ZERO) < 0) {
-            throw new CryptoJException("Invalid nonce. Must be greater or equal to zero.");
-        }
-        if (gasPriceInETHWei.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoJException("Invalid gas price in wei. Must be greater than zero.");
-        }
-        if (gasLimitInUnits.compareTo(BigInteger.ZERO) <= 0) {
-            throw new CryptoJException("Invalid gas limit in units. Must be greater than zero.");
-        }
-        return doSignEthereumBasedTransaction(
-                fromPrivateKey,
-                toAddress,
-                coin,
-                amount,
-                nonce,
-                gasPriceInETHWei,
-                gasLimitInUnits,
-                !network.isMainNet()
-        );
     }
 
 }
