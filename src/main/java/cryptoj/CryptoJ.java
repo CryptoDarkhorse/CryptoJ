@@ -48,7 +48,7 @@ import java.util.List;
 public class CryptoJ {
 
     /**
-     * Generate valid mnemonic (seed) (accrodring to given attributes)
+     * Generate valid mnemonic (seed) (according to given attributes)
      *
      * @param length for example 12
      * @return mnemonic
@@ -77,7 +77,7 @@ public class CryptoJ {
     }
 
     /**
-     * validate if mnemonic (seed) is ok (accrodring to given attributes)
+     * validate if mnemonic (seed) is ok (according to given attributes)
      *
      * @param mnemonic seed
      * @return true if mnemonic is ok, otherwise false
@@ -192,7 +192,7 @@ public class CryptoJ {
     }
 
     /**
-     * Check if xpub is valid (accrodring to given attributes)
+     * Check if xpub is valid (according to given attributes)
      *
      * @param network
      * @param xPub
@@ -286,7 +286,7 @@ public class CryptoJ {
     }
 
     /**
-     * validate privatekey (accrodring to given attributes)
+     * validate privatekey (according to given attributes)
      *
      * @param network
      * @param privKey
@@ -324,7 +324,7 @@ public class CryptoJ {
     }
 
     /**
-     * generate address (accrodring to given attributes) to receive coins
+     * generate address (according to given attributes) to receive coins
      *
      * @param network
      * @param xPub
@@ -385,7 +385,7 @@ public class CryptoJ {
     }
 
     /**
-     * validate if address is valid (accrodring to given attributes) and contains no errors mis-typos etc
+     * validate if address is valid (according to given attributes) and contains no errors mis-typos etc
      *
      * @param network
      * @param address
