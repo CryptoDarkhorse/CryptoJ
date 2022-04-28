@@ -41,8 +41,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CryptoJ {
 
@@ -51,11 +50,11 @@ public class CryptoJ {
     // SECTION - MNEMONIC //
 
     /**
-     * Generate valid mnemonic.
+     * Generate mnemonic.
      *
      * @param length min value 12, max value 24, multiply of 3
      * @return mnemonic phrase made of words
-     * @throws CryptoJException if given attributes are invalid or internal validation fails
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
     public static String generateMnemonic(
             @NonNull Integer length
@@ -87,7 +86,7 @@ public class CryptoJ {
     /**
      * Validate mnemonic.
      *
-     * @param mnemonic phrase made of words
+     * @param mnemonic to be validated
      * @return true if it's valid, otherwise false
      */
     public static boolean isMnemonicValid(
@@ -110,18 +109,18 @@ public class CryptoJ {
     // SECTION - XPUB //
 
     /**
-     * Generate extended public key from given attributes.
+     * Generate extended public key.<br>
+     * <br>
+     * <strong>Note:</strong> Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
+     * However, this is only difference of notation, and results are same.
+     * And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
+     * which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
      *
      * @param network network
      * @param addrType address type
      * @param mnemonic phrase made of words
      * @return extened public key
-     * @throws CryptoJException if given attributes are invalid or internal validation fails
-     *
-     * Note: Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
-     *       However, this is only difference of notation, and results are same.
-     *       And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
-     *       which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
     public static String generateXPub(
             @NonNull Network network,
@@ -188,7 +187,7 @@ public class CryptoJ {
      * Validate xPub.
      *
      * @param network network
-     * @param xPub xPub
+     * @param xPub xPub to be validated
      * @return true if it's valid, otherwise false
      */
     public static boolean isXPubValid(
@@ -211,13 +210,13 @@ public class CryptoJ {
     // SECTION - ADDRESS //
 
     /**
-     * generate address (according to given attributes) to receive coins
+     * Generate blockchain address for receiving coins.
      *
-     * @param network
-     * @param xPub
-     * @param derivationIndex
-     * @return
-     * @throws CryptoJException
+     * @param network network
+     * @param xPub xpub to generate the address from
+     * @param derivationIndex derivation index
+     * @return address for receiving coins
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
     public static String generateAddress(
             @NonNull Network network,
@@ -225,8 +224,11 @@ public class CryptoJ {
             @NonNull String xPub,
             @NonNull int derivationIndex
     ) throws CryptoJException {
-        if (!isXPubValid(network, xPub)) {
-            throw new CryptoJException("Invalid xpub");
+        if (isXPubValid(network, xPub) == false) {
+            throw new CryptoJException("Invalid xPub.");
+        }
+        if (derivationIndex < 0) {
+            throw new CryptoJException("Invalid derivation index (must be greater or equal to zero).");
         }
 
         NetworkParameters params = getNetworkParams(network);
@@ -268,21 +270,26 @@ public class CryptoJ {
             default:
                 throw new CryptoJException("Unsupported network");
         }
+
+        // internal validation
+        if (isAddressValid(network, encodedAddress) == false) {
+            throw new CryptoJException("Internal validation (address) has failed.");
+        }
+
         return encodedAddress;
     }
 
     /**
-     * validate if address is valid (according to given attributes) and contains no errors mis-typos etc
+     * Validate blockchain address for receiving coins.
      *
-     * @param network
-     * @param address
-     * @return
-     * @throws CryptoJException
+     * @param network network
+     * @param address to be validated
+     * @return true if it's valid, otherwise false
      */
     public static boolean isAddressValid(
             @NonNull Network network,
             @NonNull String address
-    ) throws CryptoJException {
+    ) {
         NetworkParameters params = getNetworkParams(network);
 
         if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
@@ -295,9 +302,27 @@ public class CryptoJ {
             Address.fromString(params, address);
             return true;
         } catch (AddressFormatException ex) {
-            ex.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Validate blockchain address for receiving coins.
+     *
+     * @param address to be validated
+     * @return collection of networks for which the address is valid
+     * If the address is not valid at all, the resulting collection will be empty
+     */
+    public static Collection<Network> isAddressValid(
+            @NonNull String address
+    ) {
+        Collection<Network> result = new HashSet();
+        for (Network network : Network.values()) {
+            if (isAddressValid(network, address)) {
+                result.add(network);
+            }
+        }
+        return Collections.unmodifiableCollection(result);
     }
 
 

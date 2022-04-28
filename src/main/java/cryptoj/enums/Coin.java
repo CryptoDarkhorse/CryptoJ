@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -120,27 +121,27 @@ public enum Coin {
         }
     }
 
-    public static Set<Coin> values(Network network, CoinType coinType) {
+    public static Collection<Coin> values(Network network, CoinType coinType) {
         if (network == null && coinType == null) {
-            return Arrays.stream(Coin.values()).collect(Collectors.toSet());
+            return Arrays.stream(Coin.values()).collect(Collectors.toUnmodifiableSet());
         }
         if (network == null && coinType != null) {
             return Arrays
                     .stream(Coin.values())
                     .filter(item -> item.getCoinType() == coinType)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toUnmodifiableSet());
         }
         if (network != null && coinType == null) {
             return Arrays
                     .stream(Coin.values())
                     .filter(item -> item.getNetworks().contains(network))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toUnmodifiableSet());
         }
         if (network != null && coinType != null) {
             return Arrays
                     .stream(Coin.values())
                     .filter(item -> item.getNetworks().contains(network) && item.getCoinType() == coinType)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toUnmodifiableSet());
         }
         return null; // this will never happen
     }
