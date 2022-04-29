@@ -45,9 +45,9 @@ public enum Network {
             0x04b24746,    // zpub
             0x04b2430c     // zprv
     ),
-    ETHEREUM_TESTNET_ROPSTEN( // todo please use here real values to be able to use ROPSTEN testnet network as well
+    ETHEREUM_TESTNET_ROPSTEN(
             "ETHEREUM_TESTNET_ROPSTEN", "Ethereum (Testnet Ropsten)",
-            CoinType.ETH, false, 60,
+            CoinType.ETH, false, 1,
             "bc", 0x00, 0x05, 0x80,
             0x0488B21E,     // xpub
             0x0488ADE4,     // xprv

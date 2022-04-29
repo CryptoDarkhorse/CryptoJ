@@ -16,6 +16,7 @@ import cryptoj.network.WrappedTestNetParams;
 import lombok.NonNull;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
+import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.script.ScriptPattern;
@@ -41,6 +42,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.util.*;
 
 /**
@@ -77,14 +79,28 @@ public class CryptoJ {
     // SECTION - MNEMONIC //
 
     /**
-     * Generate mnemonic.
-     *
+     * Generate mnemonic
      * @param length min value 12, max value 24, multiply of 3
-     * @return mnemonic phrase made of words
+     * @return mnemonic phrase mode of words
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
     public static String generateMnemonic(
             @NonNull Integer length
+    ) throws CryptoJException {
+        return generateMnemonic(length, "");
+    }
+
+    /**
+     * Generate mnemonic.
+     *
+     * @param length min value 12, max value 24, multiply of 3
+     * @param passphrase passphrase used to encrypt key - empty string means non-encrypted key
+     * @return mnemonic phrase made of words
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
+     */
+    public static String generateMnemonic(
+            @NonNull Integer length,
+            String passphrase
     ) throws CryptoJException {
         // check word length
         if (length < 12 || length > 24 || length % 3 > 0)
@@ -94,7 +110,7 @@ public class CryptoJ {
         int entropyLen = length * 11 - checkSumLen;
 
         // Generate deterministic seed
-        DeterministicSeed seed = new DeterministicSeed(new SecureRandom(), entropyLen, ""); // todo we should support passphrase (also in xpub, privKeys etc) as nullable attribute to upgrade the security in case if user wants to use it
+        DeterministicSeed seed = new DeterministicSeed(new SecureRandom(), entropyLen, passphrase);
 
         // Get mnemonic from seed
         List<String> words = seed.getMnemonicCode();
@@ -477,13 +493,14 @@ public class CryptoJ {
      *
      * @param rawMessage to be signed
      * @param privateKey to use to sign the raw message
-     * @return signed (encrypted) message
+     * @return Signature of message
      */
     public static String signMessage(
             @NonNull String rawMessage,
             @NonNull String privateKey
     ) {
-        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
+        ECKey key = DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey).getKey();
+        return key.signMessage(rawMessage);
     }
 
     /**
@@ -492,15 +509,26 @@ public class CryptoJ {
      * true owner of the address without revealing relevant private key of the address.
      * See {@link cryptoj.examples.Example_4_SignAndVerifyMessage}
      *
-     * @param signedMessage to be verified (decrypted)
+     * @param message message to be verified (decrypted)
+     * @param signature message signature
      * @param address       to use to verify (decrypt) the signed (encrypted) message
-     * @return the original raw message
+     * @return true if signature is valid, otherwise false
      */
-    public static String verifyMessage(
-            @NonNull String signedMessage,
+    public static boolean verifyMessage(
+            @NonNull String message,
+            @NonNull String signature,
             @NonNull String address
     ) {
-        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
+        try {
+            ECKey key = ECKey.signedMessageToKey(message, signature);
+            Address addr = Address.fromString(MainNetParams.get(), address);
+            Address addrVerified = Address.fromKey(MainNetParams.get(), key, addr.getOutputScriptType());
+            return addr.equals(addrVerified);
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
 
@@ -715,20 +743,17 @@ public class CryptoJ {
         for (int i = 0; i < utxobjects.length; i++) {
             UTXObject utxo = utxobjects[i];
             // get transaction data from txHash
-            Transaction prevTrans = getParentTransaction(network, utxo.getTxHash());
-            // FIXME: this must be all local and offline. The point and main idea of this javalib is to have everything locally. We must prepare
-            //  signed transaction locally, without fetching any data online. If there's missing data in
-            //  the UTXObject class, then let's modify the UTXObject class and require all necessary data from
-            //  the user. When I did my own implementation of signing a BTC(legacy-only) transaction, this
-            //  UTXObject contained all what I needed to sign it locally (not fetching anything online)
-            //  There's tx has of unspent transaction, index of the receiver address of unspent transaction and privKey from that address
-            //  What else we need? I think nothing, with this, I was able to sign transactions (legacy) I can share the code with you if you want to
-            //  I will put it here: see cryptoj.oldimpl.BtcSign.sign() method (DOESNT WORK WHEN SENDING BTC TO BECH32 ADDRESSES, AS FAR AS I KNOW (maybe I am wrong, pls test it more), THIS
-            //  WAS ACTUALLY THE ORIGINAL MAIN MOST IMPORTANT REASONS WHY I STARTED THIS WHOLE CRYPTOJ PROJECT)
 
-            if (prevTrans == null) {
-                throw new CryptoJException("Failed to get UTXO info from blockchain");
+            if (utxo.getTxRawData() == null) {
+                // We have no txData - need to get from node and/or 3rd party API
+                utxo.setTxRawData(getRawTransaction(network, utxo.getTxHash()));
             }
+
+            if (utxo.getTxRawData() == null) {
+                throw new CryptoJException("Failed to get UTXO data from network");
+            }
+
+            Transaction prevTrans = new Transaction(params, Utils.HEX.decode(utxo.getTxRawData()));
 
             trans.addInput(prevTrans.getOutput(utxo.getIndex()));
         }
@@ -782,7 +807,7 @@ public class CryptoJ {
         return Utils.HEX.encode(trans.bitcoinSerialize());
     }
 
-    private static Transaction getParentTransaction(Network network, String txHash) {
+    private static String getRawTransaction(Network network, String txHash) {
         try {
             HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
                     .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
@@ -807,7 +832,7 @@ public class CryptoJ {
                     return null;
                 }
 
-                return new Transaction(getNetworkParams(network), Utils.HEX.decode(rawTransHex));
+                return rawTransHex;
             } else {
                 System.err.println("Fetching failed");
             }

@@ -289,7 +289,7 @@ public class TestMain {
         assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_MAINNET, "ltc1qdx0stttmzlexzaresv2py8s66776plgxx4w4z4"));
 
         assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "mkmNPH2xWmn422UotCNskED9QKAvnGvcLA"));
-        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "litecointestnet1qjjrmmenxx7ca7c4yhvltqqwfefllg78mgk4r95")); // FIXME this test fails
+        assertTrue(CryptoJ.isAddressValid(Network.LITECOIN_TESTNET, "tltc1qjjrmmenxx7ca7c4yhvltqqwfefllg78mf7fkda"));
 
         // invalid key - containing invalid character - I
         assertFalse(CryptoJ.isAddressValid(Network.BITCOIN_MAINNET, "IN2cRhBBPACXzwLN5iMbTepyeknAsjSP4W"));
@@ -488,12 +488,12 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[] {
-                new TXReceiver("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm", 0.12499326),
+                new TXReceiver("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj", 0.12499326),
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers); // FIXME this test fails
-            System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm");
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj");
             System.out.println(signedTx);
             System.out.println("");
         } catch (CryptoJException e) {
@@ -510,12 +510,12 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[] {
-                new TXReceiver("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv", 0.12499126),
+                new TXReceiver("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9", 0.12499126),
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers); // FIXME this test fails
-            System.out.println("litecointestnet1qhuukwzakzyqr0ekypxd9z8yz28t7rf5t8vsxpm -> litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv");
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            System.out.println("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj -> tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9");
             System.out.println(signedTx);
             System.out.println("");
         } catch (CryptoJException e) {
@@ -537,7 +537,7 @@ public class TestMain {
 
         try {
             signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
-            System.out.println("litecointestnet1qycv90vfra7z65zk0rzv9dzymy0fzulsx3wynfv -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
+            System.out.println("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9 -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
         } catch (CryptoJException e) {

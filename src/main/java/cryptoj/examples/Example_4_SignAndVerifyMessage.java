@@ -33,19 +33,17 @@ public class Example_4_SignAndVerifyMessage {
         String rawMessage = "Hello world, this is CryptoJ!";
         System.out.println("Raw message = " + rawMessage);
 
-        String signedMessage = CryptoJ.signMessage(
+        String signature = CryptoJ.signMessage(
                 rawMessage,
                 privateKey
         );
-        System.out.println("Signed message = " + signedMessage);
+        System.out.println("Message signature = " + signature);
 
-        String verifiedMessage = CryptoJ.verifyMessage(
-                signedMessage,
+        boolean verified = CryptoJ.verifyMessage(rawMessage,
+                signature,
                 address
         );
-        System.out.println("Verified message (should be the same as raw message) = " + verifiedMessage);
-
-        System.out.println("Signed message is verified: " + verifiedMessage.equals(rawMessage));
+        System.out.println("Verification result = " + verified);
 
     }
 
