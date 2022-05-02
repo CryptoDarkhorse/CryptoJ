@@ -1,7 +1,5 @@
 package cryptoj;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import cryptoj.classes.TXReceiver;
 import cryptoj.classes.UTXObject;
@@ -17,7 +15,6 @@ import cryptoj.network.WrappedTestNetParams;
 import lombok.NonNull;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.*;
-import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.script.ScriptPattern;
@@ -38,10 +35,6 @@ import org.web3j.utils.Numeric;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.util.*;
@@ -654,8 +647,7 @@ public class CryptoJ {
             @NonNull Coin coin,
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
-            @NonNull TXReceiver[] txReceivers,
-            String tatumApiKey
+            @NonNull TXReceiver[] txReceivers
     ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
@@ -668,6 +660,10 @@ public class CryptoJ {
             utxo.setTxHash(utxo.getTxHash().replace(" ", ""));
             if (utxo.getTxHash().isEmpty()) {
                 throw new CryptoJException("Invalid UTXO txHash.");
+            }
+            utxo.setTxRawData(utxo.getTxRawData().replace(" ", ""));
+            if (utxo.getTxRawData().isEmpty()) {
+                throw new CryptoJException("Invalid UTXO txRawData.");
             }
             if (utxo.getIndex() < 0) {
                 throw new CryptoJException("Invalid UTXO index.");
@@ -686,7 +682,7 @@ public class CryptoJ {
             int scale = coin.getScale();
             RoundingMode rm = RoundingMode.DOWN;
             if (amount.setScale(scale, rm).compareTo(amount) == 0) { // check if amount has valid scale
-                throw new CryptoJException("Invalid amount scale.");
+                throw new CryptoJException("Receiver's amount scale is invalid.");
             }
             amount = amount.setScale(scale, rm);
             if (amount.compareTo(coin.getMinValue()) < 0) {
@@ -694,14 +690,10 @@ public class CryptoJ {
             }
             txReceiver.setAmount(amount);
         }
-        if (tatumApiKey != null && tatumApiKey.isBlank()) {
-            tatumApiKey = null;
-        }
         return doSignBitcoinBasedTransaction(
                 network,
                 utxobjects,
-                txReceivers,
-                tatumApiKey
+                txReceivers
         );
     }
 
@@ -813,6 +805,74 @@ public class CryptoJ {
 
     // SECTION - PRIVATE LOCAL METHODS //
 
+    private static String doSignBitcoinBasedTransaction(
+            @NonNull Network network,
+            @NonNull UTXObject[] utxobjects,
+            @NonNull TXReceiver[] txReceivers
+    ) throws CryptoJException {
+        NetworkParameters params = getNetworkParams(network);
+
+        Context.getOrCreate(params);
+
+        // Init transaction
+        Transaction trans = new Transaction(params);
+        trans.setVersion(2);
+
+        // Add inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+            Transaction prevTrans = new Transaction(params, Utils.HEX.decode(utxo.getTxRawData()));
+            trans.addInput(prevTrans.getOutput(utxo.getIndex()));
+        }
+
+        // Add outputs
+        for (int i = 0; i < txReceivers.length; i++) {
+            TXReceiver receiver = txReceivers[i];
+            Address addr = Address.fromString(params, receiver.getAddress());
+            Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
+            trans.addOutput(org.bitcoinj.core.Coin.valueOf(org.bitcoinj.core.Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
+        }
+
+        // Sign inputs
+        for (int i = 0; i < utxobjects.length; i++) {
+            UTXObject utxo = utxobjects[i];
+
+            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
+
+            TransactionInput input = trans.getInput(i);
+            TransactionOutput output = input.getConnectedOutput();
+
+            Transaction.SigHash sigHash = Transaction.SigHash.ALL;
+            boolean anyoneCanPay = false;
+            Script scriptPubKey = output.getScriptPubKey();
+
+            TransactionSignature signature;
+            if (ScriptPattern.isP2PK(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature));
+                input.setWitness(null);
+            } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
+                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
+                input.setWitness(null);
+            } else {
+                if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
+                    throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
+                }
+                Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
+                signature = trans.calculateWitnessSignature(i, key, scriptCode, input.getValue(), sigHash, anyoneCanPay);
+                input.setScriptSig(ScriptBuilder.createEmpty());
+                input.setWitness(TransactionWitness.redeemP2WPKH(signature, key));
+            }
+        }
+
+        trans.verify();
+        trans.getConfidence().setSource(TransactionConfidence.Source.SELF);
+        trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
+
+        return Utils.HEX.encode(trans.bitcoinSerialize());
+    }
+
     private static String doSignEthereumBasedTransaction(
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
@@ -859,124 +919,6 @@ public class CryptoJ {
         }
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
-    }
-
-    private static String doSignBitcoinBasedTransaction(
-            @NonNull Network network,
-            @NonNull UTXObject[] utxobjects,
-            @NonNull TXReceiver[] txReceivers,
-            String tatumApiKey
-    ) throws CryptoJException {
-        NetworkParameters params = getNetworkParams(network);
-
-        Context.getOrCreate(params);
-
-        // Init transaction
-        Transaction trans = new Transaction(params);
-        trans.setVersion(2);
-
-        // Add inputs
-        for (int i = 0; i < utxobjects.length; i++) {
-            UTXObject utxo = utxobjects[i];
-            // get transaction data from txHash
-
-            if (utxo.getTxRawData() == null && tatumApiKey != null) {
-                // We have no txData - need to get from node and/or 3rd party API
-                utxo.setTxRawData(getRawTransaction(network, utxo.getTxHash(), tatumApiKey));
-            }
-
-            if (utxo.getTxRawData() == null) {
-                throw new CryptoJException("Missing UTXO txRawData.");
-            }
-
-            Transaction prevTrans = new Transaction(params, Utils.HEX.decode(utxo.getTxRawData()));
-
-            trans.addInput(prevTrans.getOutput(utxo.getIndex()));
-        }
-
-        // Add outputs
-        for (int i = 0; i < txReceivers.length; i++) {
-            TXReceiver receiver = txReceivers[i];
-            Address addr = Address.fromString(params, receiver.getAddress());
-            Script scriptPubKey = ScriptBuilder.createOutputScript(addr);
-            trans.addOutput(org.bitcoinj.core.Coin.valueOf(org.bitcoinj.core.Coin.btcToSatoshi(receiver.getAmount())), scriptPubKey);
-        }
-
-        // Sign inputs
-        for (int i = 0; i < utxobjects.length; i++) {
-            UTXObject utxo = utxobjects[i];
-
-            ECKey key = DumpedPrivateKey.fromBase58(params, utxo.getPrivKey()).getKey();
-
-            TransactionInput input = trans.getInput(i);
-            TransactionOutput output = input.getConnectedOutput();
-
-            Transaction.SigHash sigHash = Transaction.SigHash.ALL;
-            boolean anyoneCanPay = false;
-            Script scriptPubKey = output.getScriptPubKey();
-
-            TransactionSignature signature;
-            if (ScriptPattern.isP2PK(scriptPubKey)) {
-                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createInputScript(signature));
-                input.setWitness(null);
-            } else if (ScriptPattern.isP2PKH(scriptPubKey)) {
-                signature = trans.calculateSignature(i, key, scriptPubKey, sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createInputScript(signature, key));
-                input.setWitness(null);
-            } else {
-                if (!ScriptPattern.isP2WPKH(scriptPubKey)) {
-                    throw new CryptoJException("Don't know how to sign for this kind of scriptPubKey: " + scriptPubKey);
-                }
-
-                Script scriptCode = ScriptBuilder.createP2PKHOutputScript(key);
-                signature = trans.calculateWitnessSignature(i, key, scriptCode, input.getValue(), sigHash, anyoneCanPay);
-                input.setScriptSig(ScriptBuilder.createEmpty());
-                input.setWitness(TransactionWitness.redeemP2WPKH(signature, key));
-            }
-        }
-
-        trans.verify();
-        trans.getConfidence().setSource(TransactionConfidence.Source.SELF);
-        trans.setPurpose(Transaction.Purpose.USER_PAYMENT);
-
-        return Utils.HEX.encode(trans.bitcoinSerialize());
-    }
-
-    private static String getRawTransaction(
-            @NonNull Network network,
-            @NonNull String txHash,
-            @NonNull String tatumApiKey
-    ) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
-                    .header("X-API-KEY", tatumApiKey) // Tatum API key
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
-                            "\"jsonrpc\": \"2.0\",\n" +
-                            "\"method\": \"getrawtransaction\",\n" +
-                            "\"params\": [ \n" +
-                            "\"" + txHash + "\"],\n" +
-                            "\"id\": 2\n" +
-                            "}"))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(response.body());
-                String rawTransHex = node.get("result").asText();
-
-                if (rawTransHex.equals("null")) {
-                    return null;
-                }
-
-                return rawTransHex;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
     }
 
 }
