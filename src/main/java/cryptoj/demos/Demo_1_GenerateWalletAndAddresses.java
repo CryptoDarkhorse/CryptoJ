@@ -8,7 +8,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Generate wallet and address for receiving coins (and their private keys)
  */
-public class Example_1_GenerateWalletAndAddresses {
+public class Demo_1_GenerateWalletAndAddresses {
 
     public static void main(String[] args) throws CryptoJException {
 

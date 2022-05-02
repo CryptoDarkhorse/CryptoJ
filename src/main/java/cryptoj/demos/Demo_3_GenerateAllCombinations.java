@@ -9,7 +9,7 @@ import cryptoj.tools.StringTools;
 /**
  * Generate all combinations of networks, address types, example mnemonic, wallets, their addresses and private keys
  */
-public class Example_3_GenerateAllCombinations {
+public class Demo_3_GenerateAllCombinations {
 
     public static void main(String[] args) throws CryptoJException {
         for (Network network : Network.values()) {

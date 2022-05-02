@@ -8,7 +8,7 @@ import cryptoj.exceptions.CryptoJException;
 /**
  * Sign a message, verify signed message
  */
-public class Example_2_SignAndVerifyMessage {
+public class Demo_2_SignAndVerifyMessage {
 
     public static void main(String[] args) throws CryptoJException {
 

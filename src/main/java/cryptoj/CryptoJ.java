@@ -7,7 +7,7 @@ import cryptoj.enums.AddressType;
 import cryptoj.enums.Coin;
 import cryptoj.enums.CoinType;
 import cryptoj.enums.Network;
-import cryptoj.demos.Example_2_SignAndVerifyMessage;
+import cryptoj.demos.Demo_2_SignAndVerifyMessage;
 import cryptoj.exceptions.CryptoJException;
 import cryptoj.network.IWrappedNetParams;
 import cryptoj.network.WrappedMainNetParams;
@@ -560,7 +560,7 @@ public class CryptoJ {
 
     /**
      * Signs any raw text message using specific private key.
-     * See {@link Example_2_SignAndVerifyMessage}
+     * See {@link Demo_2_SignAndVerifyMessage}
      *
      * @param rawMessage to be signed
      * @param privateKey to use to sign the raw message
@@ -596,7 +596,7 @@ public class CryptoJ {
 
     /**
      * Verifies signature of a raw message, if the raw message was signed using private key of specific address.
-     * See {@link Example_2_SignAndVerifyMessage}
+     * See {@link Demo_2_SignAndVerifyMessage}
      *
      * @param rawMessage a raw text message which was signed by private key
      * @param signature  signature provided by address owner
