@@ -25,4 +25,5 @@ public class UTXObject {
         this.privKey = privKey;
         txRawData = null;
     }
+
 }

@@ -16,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * All test cases are made using "Mnemonic Code Converter"(https://iancoleman.io/bip39/)
  */
 public class TestMain {
+
+    private static final String TATUM_API_KEY = "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4";
+
     @Test
     @DisplayName("Testing mnemonic generation & validation")
     void testMnemonic() {
@@ -325,7 +328,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -351,7 +354,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -377,7 +380,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -403,7 +406,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("Send from " + receivers[1].getAddress() + " to " + receivers[0].getAddress());
             System.out.println("    Amount " + receivers[0].getAmount());
             System.out.println("    Change " + receivers[1].getAmount());
@@ -439,7 +442,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.BTC, Network.BITCOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
             System.out.println(signedTx);
             System.out.println("");
@@ -470,7 +473,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");
@@ -492,7 +495,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj");
             System.out.println(signedTx);
             System.out.println("");
@@ -514,7 +517,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj -> tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9");
             System.out.println(signedTx);
             System.out.println("");
@@ -536,7 +539,7 @@ public class TestMain {
         };
 
         try {
-            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers);
+            signedTx = CryptoJ.signBitcoinBasedTransaction(Coin.LTC, Network.LITECOIN_TESTNET, utxos, receivers, TATUM_API_KEY);
             System.out.println("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9 -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
             System.out.println("");

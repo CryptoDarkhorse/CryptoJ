@@ -603,20 +603,29 @@ public class CryptoJ {
             Address addrVerified = Address.fromKey(MainNetParams.get(), key, addr.getOutputScriptType());
             return addr.equals(addrVerified);
         } catch (SignatureException e) {
-            e.printStackTrace();
+            return false;
         }
-
-        return false;
     }
 
 
     // SECTION - SIGN TRANSACTION //
 
+    /**
+     * Prepares signed transaction ready to be broadcast.
+     *
+     * @param coin to be sent
+     * @param network on which the transaction will be broadcast
+     * @param utxobjects inputs
+     * @param txReceivers outputs
+     * @return signed transaction has to be broadcast
+     * @throws CryptoJException if signing failed
+     */
     public static String signBitcoinBasedTransaction(
             @NonNull Coin coin,
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
-            @NonNull TXReceiver[] txReceivers
+            @NonNull TXReceiver[] txReceivers,
+            String tatumApiKey
     ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.BTC && coinType != CoinType.LTC) {
@@ -655,13 +664,31 @@ public class CryptoJ {
             }
             txReceiver.setAmount(amount);
         }
+        if (tatumApiKey != null && tatumApiKey.isBlank()) {
+            tatumApiKey = null;
+        }
         return doSignBitcoinBasedTransaction(
                 network,
                 utxobjects,
-                txReceivers
+                txReceivers,
+                tatumApiKey
         );
     }
 
+    /**
+     * Prepares signed transaction ready to be broadcast.
+     *
+     * @param network on which the transaction will be broadcast
+     * @param fromPrivateKey of an address which the funds will be sent from
+     * @param toAddress where the funds supposed to be sent to
+     * @param amount
+     * @param coin
+     * @param nonce
+     * @param gasPriceInETHWei
+     * @param gasLimitInUnits
+     * @return
+     * @throws CryptoJException
+     */
     public String signEthereumBasedTransaction(
             @NonNull Network network,
             @NonNull String fromPrivateKey,
@@ -807,7 +834,8 @@ public class CryptoJ {
     private static String doSignBitcoinBasedTransaction(
             @NonNull Network network,
             @NonNull UTXObject[] utxobjects,
-            @NonNull TXReceiver[] txReceivers
+            @NonNull TXReceiver[] txReceivers,
+            String tatumApiKey
     ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
@@ -822,13 +850,13 @@ public class CryptoJ {
             UTXObject utxo = utxobjects[i];
             // get transaction data from txHash
 
-            if (utxo.getTxRawData() == null) {
+            if (utxo.getTxRawData() == null && tatumApiKey != null) {
                 // We have no txData - need to get from node and/or 3rd party API
-                utxo.setTxRawData(getRawTransaction(network, utxo.getTxHash()));
+                utxo.setTxRawData(getRawTransaction(network, utxo.getTxHash(), tatumApiKey));
             }
 
             if (utxo.getTxRawData() == null) {
-                throw new CryptoJException("Failed to get UTXO data from network");
+                throw new CryptoJException("Missing UTXO txRawData.");
             }
 
             Transaction prevTrans = new Transaction(params, Utils.HEX.decode(utxo.getTxRawData()));
@@ -885,10 +913,14 @@ public class CryptoJ {
         return Utils.HEX.encode(trans.bitcoinSerialize());
     }
 
-    private static String getRawTransaction(Network network, String txHash) {
+    private static String getRawTransaction(
+            @NonNull Network network,
+            @NonNull String txHash,
+            @NonNull String tatumApiKey
+    ) {
         try {
             HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
-                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
+                    .header("X-API-KEY", tatumApiKey) // Tatum API key
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString("{\n" +
                             "\"jsonrpc\": \"2.0\",\n" +
@@ -906,16 +938,13 @@ public class CryptoJ {
                 String rawTransHex = node.get("result").asText();
 
                 if (rawTransHex.equals("null")) {
-                    System.err.println("Not found");
                     return null;
                 }
 
                 return rawTransHex;
-            } else {
-                System.err.println("Fetching failed");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
         return null;
     }
