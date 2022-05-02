@@ -658,10 +658,6 @@ public class CryptoJ {
             throw new CryptoJException("Invalid coin and network combination.");
         }
         for (UTXObject utxo : utxobjects) {
-            utxo.setTxHash(utxo.getTxHash().replace(" ", ""));
-            if (utxo.getTxHash().isEmpty()) {
-                throw new CryptoJException("Invalid UTXO txHash.");
-            }
             utxo.setTxRawData(utxo.getTxRawData().replace(" ", ""));
             if (utxo.getTxRawData().isEmpty()) {
                 throw new CryptoJException("Invalid UTXO txRawData.");
@@ -671,7 +667,7 @@ public class CryptoJ {
             }
             utxo.setPrivKey(utxo.getPrivKey().replace(" ", ""));
             if (isPrivKeyValid(network, utxo.getPrivKey()) == false) {
-                throw new CryptoJException("Sender's private key " + utxo.getPrivKey() + " for TxId=" + utxo.getTxHash() + " Index=" + utxo.getIndex() + " is invalid.");
+                throw new CryptoJException("Sender's private key " + utxo.getPrivKey() + " is invalid.");
             }
         }
         for (TXReceiver txReceiver : txReceivers) {

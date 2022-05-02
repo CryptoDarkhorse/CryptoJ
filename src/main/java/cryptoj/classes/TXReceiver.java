@@ -28,8 +28,14 @@ public class TXReceiver {
             @NonNull String address,
             @NonNull BigDecimal amount
     ) {
-        this.address = address;
+        this.address = address.trim();
         this.amount = amount;
+        if (this.address.isEmpty()) {
+            throw new IllegalArgumentException("Invalid address.");
+        }
+        if (this.amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Invalid amount.");
+        }
     }
 
     /**
@@ -42,8 +48,14 @@ public class TXReceiver {
             @NonNull String address,
             @NonNull double amount
     ) {
-        this.address = address;
+        this.address = address.trim();
         this.amount = new BigDecimal(amount);
+        if (this.address.isEmpty()) {
+            throw new IllegalArgumentException("Invalid address.");
+        }
+        if (this.amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Invalid amount.");
+        }
     }
 
 }
