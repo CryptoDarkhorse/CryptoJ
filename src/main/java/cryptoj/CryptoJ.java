@@ -8,6 +8,7 @@ import cryptoj.enums.Coin;
 import cryptoj.enums.CoinType;
 import cryptoj.enums.Network;
 import cryptoj.demos.Demo_2_SignAndVerifyMessage;
+import cryptoj.demos.Demo_3_EncryptAndDecryptMessage;
 import cryptoj.exceptions.CryptoJException;
 import cryptoj.network.IWrappedNetParams;
 import cryptoj.network.WrappedMainNetParams;
@@ -557,7 +558,7 @@ public class CryptoJ {
     }
 
 
-    // SECTION - SIGN & VERIFY A TEXT MESSAGE //
+    // SECTION - SIGN & VERIFY A MESSAGE //
 
     /**
      * Signs any raw text message using specific private key.
@@ -629,6 +630,44 @@ public class CryptoJ {
         } catch (SignatureException e) {
             return false;
         }
+    }
+
+
+    // SECTION - ENCRYPT & DECRYPT A MESSAGE //
+
+    /**
+     * Encrypts any raw text message using specific private key.
+     * See {@link Demo_3_EncryptAndDecryptMessage}
+     *
+     * @param network network
+     * @param rawMessage to be encrypted
+     * @param privateKey to use to encrypt the raw message
+     * @return encrypted message
+     */
+    public static String encryptMessage(
+            @NonNull Network network,
+            @NonNull String rawMessage,
+            @NonNull String privateKey
+    ) throws CryptoJException {
+        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
+    }
+
+    /**
+     * Decrypts previously encrypted message, using an address which is associated
+     * to private key which has encrypted the original message.
+     * See {@link Demo_3_EncryptAndDecryptMessage}
+     *
+     * @param network network
+     * @param encryptedMessage which was encrypted using private key associated to the address
+     * @param address which is associated to private key which has encrypted the original message
+     * @return the original message
+     */
+    public static String decryptMessage(
+            @NonNull Network network,
+            @NonNull String encryptedMessage,
+            @NonNull String address
+    ) throws CryptoJException {
+        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
     }
 
 
