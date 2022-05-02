@@ -574,10 +574,30 @@ public class CryptoJ {
      * @return Signature of message
      */
     public static String signMessage(
+            @NonNull Network network,
             @NonNull String rawMessage,
             @NonNull String privateKey
-    ) {
-        ECKey key = DumpedPrivateKey.fromBase58(MainNetParams.get(), privateKey).getKey();
+    ) throws CryptoJException {
+        ECKey key = null;
+        if (network.getCoinType() == CoinType.ETH) {
+            privateKey = privateKey.toLowerCase();
+
+            if (!privateKey.startsWith("0x"))
+                throw new CryptoJException("Invalid private key");
+
+            try {
+                byte[] privKeyBytes = Utils.HEX.decode(privateKey.substring(2));
+                key = ECKey.fromPrivate(privKeyBytes);
+            } catch (IllegalArgumentException ex) {
+                throw new CryptoJException("Invalid private key");
+            }
+        } else {
+            try {
+                key = DumpedPrivateKey.fromBase58(getNetworkParams(network), privateKey).getKey();
+            } catch (AddressFormatException ex) {
+                throw new CryptoJException("Invalid private key");
+            }
+        }
         return key.signMessage(rawMessage);
     }
 
@@ -593,14 +613,24 @@ public class CryptoJ {
      * @return true if signature is valid, otherwise false
      */
     public static boolean verifyMessage(
+            @NonNull Network network,
             @NonNull String rawMessage,
             @NonNull String signature,
             @NonNull String address
     ) {
         try {
+            NetworkParameters params = getNetworkParams(network);
             ECKey key = ECKey.signedMessageToKey(rawMessage, signature);
-            Address addr = Address.fromString(MainNetParams.get(), address);
-            Address addrVerified = Address.fromKey(MainNetParams.get(), key, addr.getOutputScriptType());
+
+            if (network.getCoinType() == CoinType.ETH && address.startsWith("0x")) {
+                byte[] encoded = key.getPubKeyPoint().getEncoded(false);
+                BigInteger publicKey = new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
+                address = address.toLowerCase();
+                String addressVerified = Keys.toChecksumAddress(Keys.getAddress(publicKey)).toLowerCase();
+                return address.equals(addressVerified);
+            }
+            Address addr = Address.fromString(params, address);
+            Address addrVerified = Address.fromKey(params, key, addr.getOutputScriptType());
             return addr.equals(addrVerified);
         } catch (SignatureException e) {
             return false;

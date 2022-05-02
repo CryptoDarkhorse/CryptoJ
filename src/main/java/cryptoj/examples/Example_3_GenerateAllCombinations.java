@@ -58,10 +58,12 @@ public class Example_3_GenerateAllCombinations {
                             StringTools.ALPHANUMERIC_CASE_SENSITIVE_ARRAY
                     ); // random raw message
                     String signature = CryptoJ.signMessage(
+                            network,
                             rawMessage,
                             privateKey
                     ); // sign message with privKey
                     boolean isVerified = CryptoJ.verifyMessage(
+                            network,
                             rawMessage,
                             signature,
                             address

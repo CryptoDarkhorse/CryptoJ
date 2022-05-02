@@ -34,12 +34,15 @@ public class Example_2_SignAndVerifyMessage {
         System.out.println("Raw message = " + rawMessage);
 
         String signature = CryptoJ.signMessage(
+                network,
                 rawMessage,
                 privateKey
         );
         System.out.println("Message signature = " + signature);
 
-        boolean verified = CryptoJ.verifyMessage(rawMessage,
+        boolean verified = CryptoJ.verifyMessage(
+                network,
+                rawMessage,
                 signature,
                 address
         );
