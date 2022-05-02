@@ -689,7 +689,7 @@ public class CryptoJ {
      * @return
      * @throws CryptoJException
      */
-    public String signEthereumBasedTransaction(
+    public static String signEthereumBasedTransaction(
             @NonNull Network network,
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
