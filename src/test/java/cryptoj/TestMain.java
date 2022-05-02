@@ -361,7 +361,6 @@ public class TestMain {
         txHash = "f9cd04069952d1926ac49f725d9e3bd13ef00afe5602411dee73d54655928cb0";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         1L,
                         "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
@@ -389,7 +388,6 @@ public class TestMain {
         txHash = "a6af4d0c9fbc22fc2ca2b77e93088ce0f1a36e8a56d9e4aaa6fad68e282d8e68";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         1L,
                         "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
@@ -417,7 +415,6 @@ public class TestMain {
         txHash = "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         0L,
                         "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
@@ -445,7 +442,6 @@ public class TestMain {
         txHash = "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         1L,
                         "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"
@@ -476,19 +472,16 @@ public class TestMain {
         String txHash3 = "dd3eb16bfc6a08534d6ca4afc19f789d551eee28797edb48f71827b5cb03d4b0";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash1,
                         getRawTransaction(network, txHash1),
                         0L,
                         "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
                 ),
                 new UTXObject(
-                        txHash2,
                         getRawTransaction(network, txHash2),
                         1L,
                         "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
                 ),
                 new UTXObject(
-                        txHash3,
                         getRawTransaction(network, txHash3),
                         0L,
                         "cP7ze2fsK5v7JxTQz2iY4bhqvfwLEANjTx8EsowERivCiPqrK14a"
@@ -525,7 +518,6 @@ public class TestMain {
         txHash = "294aeaeab186bde9981aee39a0741e944a30245675f732005ba19cc7d78d5761";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         0L,
                         "cNoirL31g43BHyKr8suPgfbStzCWPgQXs3eezj3q1gm5AMEDoq4f"
@@ -549,7 +541,6 @@ public class TestMain {
         txHash = "35e795079e25bbfcc5ec9aeb8243308bb6ff645f3e414c786905149ccbbe93f1";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         0L,
                         "cVQ4DTWzG6d3W9rBijEzVMTJGDkm2Pb7MtG82B1arxQrYDx543u2"
@@ -573,7 +564,6 @@ public class TestMain {
         txHash = "a9cae8aadde742aa910f6db7af869bdbc9a4aff184c6edbcf8b96c27c08c8300";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         0L,
                         "cMywNUMjcs8diyGyZbJuj1sfdnNiKoTJzxQTYSLSojjyA3DPkHbT"
@@ -597,7 +587,6 @@ public class TestMain {
         txHash = "b0e63a2649259ef54cceeaf9682b6aa38c9c172fe6dc8ba77cce5298b9ba3c48";
         utxos = new UTXObject[]{
                 new UTXObject(
-                        txHash,
                         getRawTransaction(network, txHash),
                         0L,
                         "cTvwDi387CeKsgMKG8L2bquMTJaHGTnvWXvsCHQoNNy1H3Szq2RT"
