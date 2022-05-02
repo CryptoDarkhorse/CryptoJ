@@ -19,7 +19,7 @@ public class UTXObject {
     @NonNull String privKey;
     String txRawData;
 
-    public UTXObject(@NonNull  String txHash, @NonNull Long index, @NonNull String privKey) {
+    public UTXObject(@NonNull String txHash, @NonNull Long index, @NonNull String privKey) {
         this.txHash = txHash;
         this.index = index;
         this.privKey = privKey;
