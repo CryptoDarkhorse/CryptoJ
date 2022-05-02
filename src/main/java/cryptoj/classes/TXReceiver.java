@@ -9,7 +9,6 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
@@ -17,8 +16,28 @@ import static lombok.AccessLevel.PRIVATE;
 public class TXReceiver {
 
     @NonNull String address;
-    @NonNull BigDecimal amount; // absolute value, for example 0.1 BTC or 0.12345678 LTC
+    @NonNull BigDecimal amount;
 
+    /**
+     * Definition of receiver of coins.
+     *
+     * @param address of the receiver
+     * @param amount absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
+     */
+    public TXReceiver(
+            @NonNull String address,
+            @NonNull BigDecimal amount
+    ) {
+        this.address = address;
+        this.amount = amount;
+    }
+
+    /**
+     * Definition of receiver of coins.
+     *
+     * @param address of the receiver
+     * @param amount absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
+     */
     public TXReceiver(
             @NonNull String address,
             @NonNull double amount
