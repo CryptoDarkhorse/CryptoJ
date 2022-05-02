@@ -20,7 +20,6 @@ public enum Coin {
     AA1(
             "AA1",
             "AA1Token",
-            "AA1",
             18,
             CoinType.ETH,
             new BigDecimal("0.000000000000000001"),
@@ -31,7 +30,6 @@ public enum Coin {
     BTC(
             "BTC",
             "Bitcoin",
-            "BTC",
             8,
             CoinType.BTC,
             new BigDecimal("0.00000001"),
@@ -42,7 +40,6 @@ public enum Coin {
     ETH(
             "ETH",
             "Ethereum",
-            "ETH",
             18,
             CoinType.ETH,
             new BigDecimal("0.000000000000000001"),
@@ -53,7 +50,6 @@ public enum Coin {
     LTC(
             "LTC",
             "Litecoin",
-            "LTC",
             8,
             CoinType.LTC,
             new BigDecimal("0.00000001"),
@@ -64,7 +60,6 @@ public enum Coin {
     USDC(
             "USDC",
             "USD Coin",
-            "USDC",
             6,
             CoinType.ETH,
             new BigDecimal("0.000001"),
@@ -75,7 +70,6 @@ public enum Coin {
     USDT(
             "USDT",
             "USD Tether",
-            "USDT",
             6,
             CoinType.ETH,
             new BigDecimal("0.000001"),
@@ -86,7 +80,6 @@ public enum Coin {
 
     final String code;
     final String name;
-    final String iso;
     final Integer scale;
     final CoinType coinType;
     final BigDecimal minValue;
@@ -97,7 +90,6 @@ public enum Coin {
     Coin(
             final @NonNull String code,
             final @NonNull String name,
-            final @NonNull String iso,
             final @NonNull Integer scale,
             final @NonNull CoinType coinType,
             final @NonNull BigDecimal minValue,
@@ -107,7 +99,6 @@ public enum Coin {
     ) {
         this.code = code;
         this.name = name;
-        this.iso = iso;
         this.scale = scale;
         this.coinType = coinType;
         this.minValue = minValue.setScale(scale, RoundingMode.DOWN);
