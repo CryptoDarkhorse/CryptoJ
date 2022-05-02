@@ -59,10 +59,7 @@ import java.util.*;
  * Prepare a signed transaction for broadcasting
  * </li>
  * <br>
- * <i>Note: Supports Bitcoin, Litecoin, Ethereum (mainnets + testnets)</i><br>
- * <br>
- * <strong>Donation (Bitcoin):</strong> 1LKHGTi6xCUMxwc1D85kVagdtTa8zg46Ea<br>
- * <strong>Donation (Ethereum & Tokens):</strong> 0xc86aa78178c160767c0003b35b287400444244f2
+ * <i>Note: Supports Bitcoin, Litecoin, Ethereum (mainnets + testnets)</i>
  *
  * @author Marek Lorenc (me.marek.lorenc@gmail.com), Jordan Cameron (c.knight8817@gmail.com)
  * @version 1.0
