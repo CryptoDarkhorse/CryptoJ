@@ -21,8 +21,8 @@ public class UTXObject {
      * Definition of sender.
      *
      * @param txRawData full raw hex data of UTXO
-     * @param index index to spent from
-     * @param privKey private key of address of the index
+     * @param index     index to spent from
+     * @param privKey   private key of address of the index
      */
     public UTXObject(
             @NonNull String txRawData,

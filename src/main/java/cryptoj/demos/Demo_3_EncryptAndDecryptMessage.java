@@ -4,7 +4,6 @@ import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
 import cryptoj.enums.Network;
 import cryptoj.exceptions.CryptoJException;
-import cryptoj.tools.StringTools;
 
 /**
  * Generate all combinations of networks, address types, example mnemonic, wallets, their addresses and private keys

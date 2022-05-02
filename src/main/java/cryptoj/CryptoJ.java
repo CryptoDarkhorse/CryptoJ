@@ -3,12 +3,12 @@ package cryptoj;
 import com.google.common.base.Splitter;
 import cryptoj.classes.TXReceiver;
 import cryptoj.classes.UTXObject;
+import cryptoj.demos.Demo_2_SignAndVerifyMessage;
+import cryptoj.demos.Demo_3_EncryptAndDecryptMessage;
 import cryptoj.enums.AddressType;
 import cryptoj.enums.Coin;
 import cryptoj.enums.CoinType;
 import cryptoj.enums.Network;
-import cryptoj.demos.Demo_2_SignAndVerifyMessage;
-import cryptoj.demos.Demo_3_EncryptAndDecryptMessage;
 import cryptoj.exceptions.CryptoJException;
 import cryptoj.network.IWrappedNetParams;
 import cryptoj.network.WrappedMainNetParams;
@@ -564,7 +564,7 @@ public class CryptoJ {
      * Signs any raw text message using specific private key.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
-     * @param network network
+     * @param network    network
      * @param rawMessage to be signed
      * @param privateKey to use to sign the raw message
      * @return Signature of message
@@ -601,7 +601,7 @@ public class CryptoJ {
      * Verifies signature of a raw message, if the raw message was signed using private key of specific address.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
-     * @param network network
+     * @param network    network
      * @param rawMessage a raw text message which was signed by private key
      * @param signature  signature provided by address owner
      * @param address    which private key signed the raw message and created the signature
@@ -639,7 +639,7 @@ public class CryptoJ {
      * Encrypts any raw text message using specific private key.
      * See {@link Demo_3_EncryptAndDecryptMessage}
      *
-     * @param network network
+     * @param network    network
      * @param rawMessage to be encrypted
      * @param privateKey to use to encrypt the raw message
      * @return encrypted message
@@ -657,9 +657,9 @@ public class CryptoJ {
      * to private key which has encrypted the original message.
      * See {@link Demo_3_EncryptAndDecryptMessage}
      *
-     * @param network network
+     * @param network          network
      * @param encryptedMessage which was encrypted using private key associated to the address
-     * @param address which is associated to private key which has encrypted the original message
+     * @param address          which is associated to private key which has encrypted the original message
      * @return the original message
      */
     public static String decryptMessage(
@@ -736,14 +736,14 @@ public class CryptoJ {
     /**
      * Prepares signed transaction ready to be broadcast.
      *
-     * @param network           on which the transaction is to be broadcast
-     * @param fromPrivateKey    of an address which the funds is be sent from
-     * @param toAddress         where the funds is to be sent to
-     * @param amount            absolute amount in full units, for example 1.123456789012345678 ETH
-     * @param coin              which is to be sent
-     * @param nonce             nonce
-     * @param gasPriceInETHWei  in wei. So for example value '150' means '150wei', which is 0.000000000000000150 ETH
-     * @param gasLimitInUnits   for example 20000 for classic ethereum ETH transaction
+     * @param network          on which the transaction is to be broadcast
+     * @param fromPrivateKey   of an address which the funds is be sent from
+     * @param toAddress        where the funds is to be sent to
+     * @param amount           absolute amount in full units, for example 1.123456789012345678 ETH
+     * @param coin             which is to be sent
+     * @param nonce            nonce
+     * @param gasPriceInETHWei in wei. So for example value '150' means '150wei', which is 0.000000000000000150 ETH
+     * @param gasLimitInUnits  for example 20000 for classic ethereum ETH transaction
      * @return signed transaction ready to be broadcast.
      * @throws CryptoJException if signing failed
      */

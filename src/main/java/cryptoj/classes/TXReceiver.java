@@ -22,7 +22,7 @@ public class TXReceiver {
      * Definition of receiver of coins.
      *
      * @param address of the receiver
-     * @param amount absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
+     * @param amount  absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
      */
     public TXReceiver(
             @NonNull String address,
@@ -42,7 +42,7 @@ public class TXReceiver {
      * Definition of receiver of coins.
      *
      * @param address of the receiver
-     * @param amount absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
+     * @param amount  absolute value in full units. For example 0.1 BTC or 1.12345678 LTC
      */
     public TXReceiver(
             @NonNull String address,
