@@ -69,9 +69,21 @@ public class Demo_4_GenerateAllCombinations {
                             address
                     ); // verify signature with address, this will let us know if our address+privKey pair is correct together
                     if (isVerified == false) {
-                        throw new CryptoJException("Verification has failed.");
+                        throw new CryptoJException("Signature verification has failed.");
                     }
                     // signature verification /ENDS/ // check if our address+privKey pair match together
+                    // encryption/decryption verification BEGINS
+                    if (CryptoJ.decryptMessage( // decrypt encrypted raw message
+                                    network,
+                                    CryptoJ.encryptMessage( // encrypt raw message
+                                            network,
+                                            rawMessage,
+                                            privateKey),
+                                    address)
+                            .equals(rawMessage) == false) { // compare if decrypted equals to original raw
+                        throw new CryptoJException("Encryption/Decryption verification has failed.");
+                    }
+                    // encryption/decryption verification ENDS
                 }
                 System.out.println("\n\n");
             }
