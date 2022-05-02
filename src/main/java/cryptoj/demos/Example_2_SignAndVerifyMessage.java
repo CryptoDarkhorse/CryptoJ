@@ -1,4 +1,4 @@
-package cryptoj.examples;
+package cryptoj.demos;
 
 import cryptoj.CryptoJ;
 import cryptoj.enums.AddressType;
