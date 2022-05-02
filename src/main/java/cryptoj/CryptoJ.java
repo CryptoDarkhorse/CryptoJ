@@ -286,6 +286,7 @@ public class CryptoJ {
      * Generate blockchain address for receiving coins.
      *
      * @param network         network
+     * @param addrType        address type
      * @param xPub            xpub to generate the address from
      * @param derivationIndex derivation index
      * @return address for receiving coins
@@ -407,6 +408,7 @@ public class CryptoJ {
      * Generate private key for an address.
      *
      * @param network         network
+     * @param addrType        address type
      * @param mnemonic        mnemonic
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
@@ -431,7 +433,9 @@ public class CryptoJ {
      * Generate private key for an address.
      *
      * @param network         network
+     * @param addrType        address type
      * @param mnemonic        mnemonic
+     * @param passphrase      which was used when mnemonic was generated
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -559,6 +563,7 @@ public class CryptoJ {
      * Signs any raw text message using specific private key.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
+     * @param network network
      * @param rawMessage to be signed
      * @param privateKey to use to sign the raw message
      * @return Signature of message
@@ -595,6 +600,7 @@ public class CryptoJ {
      * Verifies signature of a raw message, if the raw message was signed using private key of specific address.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
+     * @param network network
      * @param rawMessage a raw text message which was signed by private key
      * @param signature  signature provided by address owner
      * @param address    which private key signed the raw message and created the signature
@@ -635,7 +641,7 @@ public class CryptoJ {
      * @param network     on which the transaction will be broadcast
      * @param utxobjects  inputs
      * @param txReceivers outputs
-     * @return signed transaction has to be broadcast
+     * @return signed transaction ready to be broadcast
      * @throws CryptoJException if signing failed
      */
     public static String signBitcoinBasedTransaction(
@@ -695,26 +701,26 @@ public class CryptoJ {
     /**
      * Prepares signed transaction ready to be broadcast.
      *
-     * @param network          on which the transaction will be broadcast
-     * @param fromPrivateKey   of an address which the funds will be sent from
-     * @param toAddress        where the funds supposed to be sent to
-     * @param amount
-     * @param coin
-     * @param nonce
-     * @param gasPriceInETHWei
-     * @param gasLimitInUnits
-     * @return
-     * @throws CryptoJException
+     * @param network           on which the transaction is to be broadcast
+     * @param fromPrivateKey    of an address which the funds is be sent from
+     * @param toAddress         where the funds is to be sent to
+     * @param amount            absolute amount in full units, for example 1.123456789012345678 ETH
+     * @param coin              which is to be sent
+     * @param nonce             nonce
+     * @param gasPriceInETHWei  in wei. So for example value '150' means '150wei', which is 0.000000000000000150 ETH
+     * @param gasLimitInUnits   for example 20000 for classic ethereum ETH transaction
+     * @return signed transaction ready to be broadcast.
+     * @throws CryptoJException if signing failed
      */
     public static String signEthereumBasedTransaction(
             @NonNull Network network,
             @NonNull String fromPrivateKey,
             @NonNull String toAddress,
-            @NonNull BigDecimal amount, // absolute amount, for example 0.123456789012345678 ETH
+            @NonNull BigDecimal amount,
             @NonNull Coin coin,
             @NonNull BigInteger nonce,
-            @NonNull BigInteger gasPriceInETHWei, // for example value 'gasPriceInETHWei=150' means '150wei', which is 0.000000000000000150 ETH
-            @NonNull BigInteger gasLimitInUnits // for example 20000
+            @NonNull BigInteger gasPriceInETHWei,
+            @NonNull BigInteger gasLimitInUnits
     ) throws CryptoJException {
         CoinType coinType = coin.getCoinType();
         if (coinType != CoinType.ETH) {
@@ -771,7 +777,9 @@ public class CryptoJ {
      * @param network from which to get network parameters
      * @return network parameters
      */
-    public static NetworkParameters getNetworkParams(Network network) {
+    public static NetworkParameters getNetworkParams(
+            @NonNull Network network
+    ) {
         IWrappedNetParams wrappedParams = null;
         NetworkParameters params = null;
 
