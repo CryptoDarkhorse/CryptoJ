@@ -81,14 +81,15 @@ public class CryptoJ {
 
     /**
      * Generate mnemonic
+     *
      * @param length min value 12, max value 24, multiply of 3
-     * @return mnemonic phrase mode of words
+     * @return mnemonic phrase made of words
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
      */
     public static String generateMnemonic(
             @NonNull Integer length
     ) throws CryptoJException {
-        return generateMnemonic(length, "");
+        return generateMnemonic(length, null);
     }
 
     /**
@@ -106,6 +107,11 @@ public class CryptoJ {
         // check word length
         if (length < 12 || length > 24 || length % 3 > 0)
             throw new CryptoJException("Invalid word length: it must be between 12 and 24, and multiple of 3");
+
+        // fix passphrase
+        if (passphrase == null) {
+            passphrase = "";
+        }
 
         int checkSumLen = length / 3;
         int entropyLen = length * 11 - checkSumLen;
@@ -170,16 +176,52 @@ public class CryptoJ {
             @NonNull AddressType addrType,
             @NonNull String mnemonic
     ) throws CryptoJException {
+        return generateXPub(
+                network,
+                addrType,
+                mnemonic,
+                null
+        );
+    }
+
+    /**
+     * Generate xPub (extended public key).<br>
+     * <br>
+     * <strong>Note:</strong> Extended public key of LiteCoin have 2 kinds of prefixes - xpub & Ltpub
+     * However, this is only difference of notation, and results are same.
+     * And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
+     * which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
+     *
+     * @param network  network
+     * @param addrType address type
+     * @param mnemonic phrase made of words
+     * @param passphrase which was used when mnemonic was generated
+     * @return extened public key
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
+     */
+    public static String generateXPub(
+            @NonNull Network network,
+            @NonNull AddressType addrType,
+            @NonNull String mnemonic,
+            String passphrase
+    ) throws CryptoJException {
+
         if (addrType.getPurpose() < 0) {
             throw new CryptoJException("P2SH does not support HD wallet");
         }
+
         if (isMnemonicValid(mnemonic) == false) {
             throw new CryptoJException("Mnemonic is not valid.");
         }
 
+        // fix passphrase
+        if (passphrase == null) {
+            passphrase = "";
+        }
+
         DeterministicSeed seed;
         try {
-            seed = new DeterministicSeed(mnemonic, null, "", 0);
+            seed = new DeterministicSeed(mnemonic, null, passphrase, 0);
         } catch (UnreadableWalletException e) {
             throw new CryptoJException("Invalid mnemonic");
         }
@@ -230,7 +272,7 @@ public class CryptoJ {
      * Validate xPub (extended public key).
      *
      * @param network network
-     * @param xPub    xPub to be validated
+     * @param xPub xPub to be validated
      * @return true if it's valid, otherwise false
      */
     public static boolean isXPubValid(
@@ -253,8 +295,8 @@ public class CryptoJ {
     /**
      * Generate blockchain address for receiving coins.
      *
-     * @param network         network
-     * @param xPub            xpub to generate the address from
+     * @param network network
+     * @param xPub xpub to generate the address from
      * @param derivationIndex derivation index
      * @return address for receiving coins
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -265,9 +307,11 @@ public class CryptoJ {
             @NonNull String xPub,
             @NonNull int derivationIndex
     ) throws CryptoJException {
+
         if (isXPubValid(network, xPub) == false) {
             throw new CryptoJException("Invalid xPub.");
         }
+
         if (derivationIndex < 0) {
             throw new CryptoJException("Invalid derivation index (must be greater or equal to zero).");
         }
@@ -372,8 +416,8 @@ public class CryptoJ {
     /**
      * Generate private key for an address.
      *
-     * @param network         network
-     * @param mnemonic        mnemonic
+     * @param network network
+     * @param mnemonic mnemonic
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -384,19 +428,52 @@ public class CryptoJ {
             @NonNull String mnemonic,
             @NonNull int derivationIndex
     ) throws CryptoJException {
+        return generatePrivateKey(
+                network,
+                addrType,
+                mnemonic,
+                null,
+                derivationIndex
+        );
+    }
+
+    /**
+     * Generate private key for an address.
+     *
+     * @param network network
+     * @param mnemonic mnemonic
+     * @param derivationIndex of the address which to generate the private key for
+     * @return private key of the address on specific derivation index
+     * @throws CryptoJException if method params are invalid or internal validation of generated result fails
+     */
+    public static String generatePrivateKey(
+            @NonNull Network network,
+            @NonNull AddressType addrType,
+            @NonNull String mnemonic,
+            String passphrase,
+            @NonNull int derivationIndex
+    ) throws CryptoJException {
+
         if (addrType.getPurpose() < 0) {
             throw new CryptoJException("P2SH does not support HD wallet");
         }
+
         if (isMnemonicValid(mnemonic) == false) {
             throw new CryptoJException("Invalid mnemonic");
         }
+
+        // fix passphrase
+        if (passphrase == null) {
+            passphrase = "";
+        }
+
         if (derivationIndex < 0) {
             throw new CryptoJException("Invalid derivation index (must be greater or equal to zero).");
         }
 
         DeterministicSeed seed;
         try {
-            seed = new DeterministicSeed(mnemonic, null, "", 0);
+            seed = new DeterministicSeed(mnemonic, null, passphrase, 0);
         } catch (UnreadableWalletException e) {
             throw new CryptoJException("Invalid mnemonic");
         }
@@ -505,23 +582,23 @@ public class CryptoJ {
     }
 
     /**
-     * Verify (decrypts) a signed (encrypted) message using specific address
-     * in purpose to verify that the message was signed (decrypted) by real
+     * Verifies signature of a raw message, if the raw message was signed using private key of specific address.
+     * This method is to verify that the raw message was signed (the signature was created) by real
      * true owner of the address without revealing relevant private key of the address.
      * See {@link Example_2_SignAndVerifyMessage}
      *
-     * @param message message to be verified (decrypted)
-     * @param signature message signature
-     * @param address       to use to verify (decrypt) the signed (encrypted) message
+     * @param rawMessage a raw text message which was signed by private key
+     * @param signature signature provided by address owner
+     * @param address which private key signed the raw message and created the signature
      * @return true if signature is valid, otherwise false
      */
     public static boolean verifyMessage(
-            @NonNull String message,
+            @NonNull String rawMessage,
             @NonNull String signature,
             @NonNull String address
     ) {
         try {
-            ECKey key = ECKey.signedMessageToKey(message, signature);
+            ECKey key = ECKey.signedMessageToKey(rawMessage, signature);
             Address addr = Address.fromString(MainNetParams.get(), address);
             Address addrVerified = Address.fromKey(MainNetParams.get(), key, addr.getOutputScriptType());
             return addr.equals(addrVerified);
