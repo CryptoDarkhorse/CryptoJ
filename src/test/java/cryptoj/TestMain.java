@@ -25,6 +25,41 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class TestMain {
 
+    private static String getRawTransaction(
+            @NonNull Network network,
+            @NonNull String txHash
+    ) {
+        try {
+            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
+                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
+                            "\"jsonrpc\": \"2.0\",\n" +
+                            "\"method\": \"getrawtransaction\",\n" +
+                            "\"params\": [ \n" +
+                            "\"" + txHash + "\"],\n" +
+                            "\"id\": 2\n" +
+                            "}"))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(response.body());
+                String rawTransHex = node.get("result").asText();
+
+                if (rawTransHex.equals("null")) {
+                    return null;
+                }
+
+                return rawTransHex;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
+    }
+
     @Test
     @DisplayName("Testing mnemonic generation & validation")
     void testMnemonic() {
@@ -324,16 +359,16 @@ public class TestMain {
 
         // Test case - 1: Legacy to Legacy
         txHash = "f9cd04069952d1926ac49f725d9e3bd13ef00afe5602411dee73d54655928cb0";
-        utxos = new UTXObject[] {
-            new UTXObject(
-                    txHash,
-                    getRawTransaction(network, txHash),
-                    1L,
-                    "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
-            )
+        utxos = new UTXObject[]{
+                new UTXObject(
+                        txHash,
+                        getRawTransaction(network, txHash),
+                        1L,
+                        "cSSs15Tp7Sq4vrxfDhgNYFupWnF6VXm7cf828HkyS563sLYhe3QE"
+                )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.0001),
                 new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.00073 - 0.0001 - transactionFee) // change
         };
@@ -345,14 +380,14 @@ public class TestMain {
             System.out.println("    Change " + receivers[1].getAmount());
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Test case - 2: Legacy to Segwit
         txHash = "a6af4d0c9fbc22fc2ca2b77e93088ce0f1a36e8a56d9e4aaa6fad68e282d8e68";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -361,7 +396,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.0001),
                 new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.001 - 0.0001 - transactionFee) // change
         };
@@ -373,14 +408,14 @@ public class TestMain {
             System.out.println("    Change " + receivers[1].getAmount());
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Test case - 3: Segwit to Legacy
         txHash = "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -389,7 +424,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.000004),
                 new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00001 - 0.000004 - transactionFee) // change
         };
@@ -401,14 +436,14 @@ public class TestMain {
             System.out.println("    Change " + receivers[1].getAmount());
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Test case - 4: Segwit to Segwit
         txHash = "066af46627ae8271b0f5f9064f72fc339a0dbcdd2e3f94826bce256b3c1c0ef4";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -417,7 +452,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004),
                 new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.00008859 - 0.00004 - transactionFee) // change
         };
@@ -429,7 +464,7 @@ public class TestMain {
             System.out.println("    Change " + receivers[1].getAmount());
             System.out.println("Signed transaction data:");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
@@ -439,7 +474,7 @@ public class TestMain {
         String txHash1 = "bc3780eca9b191ec1f3b8cda10d85ac2e4c308d657a025607ddafb9f2bb26adc";
         String txHash2 = "766ad20a0687c9d163aea5d8d5efe3d618ba4ffeb8c837c44221d3c59ef7b4c2";
         String txHash3 = "dd3eb16bfc6a08534d6ca4afc19f789d551eee28797edb48f71827b5cb03d4b0";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash1,
                         getRawTransaction(network, txHash1),
@@ -460,7 +495,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004000) // change
         };
 
@@ -468,7 +503,7 @@ public class TestMain {
             signedTx = CryptoJ.signBitcoinBasedTransaction(coin, network, utxos, receivers);
             System.out.println("Merging balance of address tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
@@ -488,7 +523,7 @@ public class TestMain {
 
         // Testing legacy -> legacy
         txHash = "294aeaeab186bde9981aee39a0741e944a30245675f732005ba19cc7d78d5761";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -497,7 +532,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12499526),
         };
 
@@ -505,14 +540,14 @@ public class TestMain {
             signedTx = CryptoJ.signBitcoinBasedTransaction(coin, network, utxos, receivers);
             System.out.println("n1bcns8QWs8zeGo9KhSANqdM8ychQ3w7UN -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Testing legacy -> segwit
         txHash = "35e795079e25bbfcc5ec9aeb8243308bb6ff645f3e414c786905149ccbbe93f1";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -521,7 +556,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj", 0.12499326),
         };
 
@@ -529,14 +564,14 @@ public class TestMain {
             signedTx = CryptoJ.signBitcoinBasedTransaction(coin, network, utxos, receivers);
             System.out.println("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t -> tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Testing segwit -> segwit
         txHash = "a9cae8aadde742aa910f6db7af869bdbc9a4aff184c6edbcf8b96c27c08c8300";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -545,7 +580,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9", 0.12499126),
         };
 
@@ -553,14 +588,14 @@ public class TestMain {
             signedTx = CryptoJ.signBitcoinBasedTransaction(coin, network, utxos, receivers);
             System.out.println("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj -> tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
 
         // Testing segwit -> legacy
         txHash = "b0e63a2649259ef54cceeaf9682b6aa38c9c172fe6dc8ba77cce5298b9ba3c48";
-        utxos = new UTXObject[] {
+        utxos = new UTXObject[]{
                 new UTXObject(
                         txHash,
                         getRawTransaction(network, txHash),
@@ -569,7 +604,7 @@ public class TestMain {
                 )
         };
 
-        receivers = new TXReceiver[] {
+        receivers = new TXReceiver[]{
                 new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12498926),
         };
 
@@ -577,45 +612,10 @@ public class TestMain {
             signedTx = CryptoJ.signBitcoinBasedTransaction(coin, network, utxos, receivers);
             System.out.println("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9 -> n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t");
             System.out.println(signedTx);
-            System.out.println("");
+            System.out.println();
         } catch (CryptoJException e) {
             e.printStackTrace();
         }
-    }
-
-    private static String getRawTransaction(
-            @NonNull Network network,
-            @NonNull String txHash
-    ) {
-        try {
-            HttpRequest req = HttpRequest.newBuilder().uri(new URI("https://api-eu1.tatum.io/v3/blockchain/node/" + network.getCoinType().getCode()))
-                    .header("X-API-KEY", "ba638a01-3a6d-4fa3-b15b-4f395d9b90a4") // Tatum API key
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\n" +
-                            "\"jsonrpc\": \"2.0\",\n" +
-                            "\"method\": \"getrawtransaction\",\n" +
-                            "\"params\": [ \n" +
-                            "\"" + txHash + "\"],\n" +
-                            "\"id\": 2\n" +
-                            "}"))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newBuilder().build().send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(response.body());
-                String rawTransHex = node.get("result").asText();
-
-                if (rawTransHex.equals("null")) {
-                    return null;
-                }
-
-                return rawTransHex;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
     }
 
 }

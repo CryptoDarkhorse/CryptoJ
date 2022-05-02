@@ -88,7 +88,7 @@ public class CryptoJ {
     /**
      * Generate mnemonic.
      *
-     * @param length min value 12, max value 24, multiply of 3
+     * @param length     min value 12, max value 24, multiply of 3
      * @param passphrase passphrase used to encrypt key - empty string means non-encrypted key
      * @return mnemonic phrase made of words
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -185,9 +185,9 @@ public class CryptoJ {
      * And most LiteCoin wallets support all of these 2 types and toggle using a checkbox
      * which has label "Use Ltpv / Ltub instead of xprv / xpub" or so.
      *
-     * @param network  network
-     * @param addrType address type
-     * @param mnemonic phrase made of words
+     * @param network    network
+     * @param addrType   address type
+     * @param mnemonic   phrase made of words
      * @param passphrase which was used when mnemonic was generated
      * @return extened public key
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -265,7 +265,7 @@ public class CryptoJ {
      * Validate xPub (extended public key).
      *
      * @param network network
-     * @param xPub xPub to be validated
+     * @param xPub    xPub to be validated
      * @return true if it's valid, otherwise false
      */
     public static boolean isXPubValid(
@@ -288,8 +288,8 @@ public class CryptoJ {
     /**
      * Generate blockchain address for receiving coins.
      *
-     * @param network network
-     * @param xPub xpub to generate the address from
+     * @param network         network
+     * @param xPub            xpub to generate the address from
      * @param derivationIndex derivation index
      * @return address for receiving coins
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -409,8 +409,8 @@ public class CryptoJ {
     /**
      * Generate private key for an address.
      *
-     * @param network network
-     * @param mnemonic mnemonic
+     * @param network         network
+     * @param mnemonic        mnemonic
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -433,8 +433,8 @@ public class CryptoJ {
     /**
      * Generate private key for an address.
      *
-     * @param network network
-     * @param mnemonic mnemonic
+     * @param network         network
+     * @param mnemonic        mnemonic
      * @param derivationIndex of the address which to generate the private key for
      * @return private key of the address on specific derivation index
      * @throws CryptoJException if method params are invalid or internal validation of generated result fails
@@ -601,8 +601,8 @@ public class CryptoJ {
      * See {@link Example_2_SignAndVerifyMessage}
      *
      * @param rawMessage a raw text message which was signed by private key
-     * @param signature signature provided by address owner
-     * @param address which private key signed the raw message and created the signature
+     * @param signature  signature provided by address owner
+     * @param address    which private key signed the raw message and created the signature
      * @return true if signature is valid, otherwise false
      */
     public static boolean verifyMessage(
@@ -636,9 +636,9 @@ public class CryptoJ {
     /**
      * Prepares signed transaction ready to be broadcast.
      *
-     * @param coin to be sent
-     * @param network on which the transaction will be broadcast
-     * @param utxobjects inputs
+     * @param coin        to be sent
+     * @param network     on which the transaction will be broadcast
+     * @param utxobjects  inputs
      * @param txReceivers outputs
      * @return signed transaction has to be broadcast
      * @throws CryptoJException if signing failed
@@ -700,9 +700,9 @@ public class CryptoJ {
     /**
      * Prepares signed transaction ready to be broadcast.
      *
-     * @param network on which the transaction will be broadcast
-     * @param fromPrivateKey of an address which the funds will be sent from
-     * @param toAddress where the funds supposed to be sent to
+     * @param network          on which the transaction will be broadcast
+     * @param fromPrivateKey   of an address which the funds will be sent from
+     * @param toAddress        where the funds supposed to be sent to
      * @param amount
      * @param coin
      * @param nonce
