@@ -67,6 +67,9 @@ import java.util.*;
  * Sign and verify a text message
  * </li>
  * <li>
+ * Encrypt and decrypt a text message
+ * </li>
+ * <li>
  * Prepare a signed transaction for broadcasting
  * </li>
  * <br>
