@@ -72,18 +72,20 @@ public class Demo_4_GenerateAllCombinations {
                         throw new CryptoJException("Signature verification has failed.");
                     }
                     // signature verification /ENDS/ // check if our address+privKey pair match together
-                    // encryption/decryption verification BEGINS
-                    if (CryptoJ.decryptMessage( // decrypt encrypted raw message
-                                    network,
-                                    CryptoJ.encryptMessage( // encrypt raw message
-                                            network,
-                                            rawMessage,
-                                            privateKey),
-                                    address)
-                            .equals(rawMessage) == false) { // compare if decrypted equals to original raw
+                    // encryption/decryption of a message BEGINS
+                    String encryptedMessage = CryptoJ.encryptMessage(
+                            rawMessage,
+                            CryptoJ.getPublicKey(network, privateKey)
+                    );
+                    String decryptedMessage = CryptoJ.decryptMessage(
+                            network,
+                            encryptedMessage,
+                            privateKey
+                    );
+                    if (decryptedMessage.equals(rawMessage) == false) { // compare if decrypted equals to original raw
                         throw new CryptoJException("Encryption/Decryption verification has failed.");
                     }
-                    // encryption/decryption verification ENDS
+                    // encryption/decryption of a message ENDS
                 }
                 System.out.println("\n\n");
             }

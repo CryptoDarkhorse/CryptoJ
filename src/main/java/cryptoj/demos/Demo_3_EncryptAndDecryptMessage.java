@@ -35,7 +35,7 @@ public class Demo_3_EncryptAndDecryptMessage {
         String rawMessage = "Hello world, this is CryptoJ!";
         System.out.println("rawMessage = " + rawMessage);
 
-        String encryptedMessage = CryptoJ.encryptMessage(network, rawMessage, publicKey);
+        String encryptedMessage = CryptoJ.encryptMessage(rawMessage, publicKey);
         System.out.println("encryptedMessage = " + encryptedMessage);
 
         String decryptedMessage = CryptoJ.decryptMessage(network, encryptedMessage, privateKey);

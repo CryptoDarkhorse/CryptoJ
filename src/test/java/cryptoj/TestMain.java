@@ -286,30 +286,30 @@ public class TestMain {
     @Test
     @DisplayName("Test private key validity")
     void testPrivateKey() {
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7icqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3LChNw3VArUV2QMBuiZkNW7cqJqReC"));
 
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_TESTNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_TESTNET, "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_TESTNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_TESTNET, "cV6qvG8sAzkVLjJ8oGfvLwBsdyXuKWryTcg5BYN1X4FGFF4Bfcfz"));
 
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_REGTEST, "cQiQ1qtkzRc83ES9zn7sAJuL7LQki6qwjCsmpKX49Y63wrQyctkR"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.BITCOIN_REGTEST, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_REGTEST, "cQiQ1qtkzRc83ES9zn7sAJuL7LQki6qwjCsmpKX49Y63wrQyctkR"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.BITCOIN_REGTEST, "cQQ9AaCJLM79hmGiRpuik72gn3mgcGYgEQeCRnSaCgKhzhWj6gHp"));
 
-        assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM_MAINNET, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.ETHEREUM_MAINNET, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.ETHEREUM_MAINNET, "0x23a3d50abb6724676f34faaba2d3d0a1fb72b00a453c22d411813c1c46c01b81"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.ETHEREUM_MAINNET, "0x4fa2c5184231d2f20a9a9e6e933758cfdcebee5f5546fc8dd72ac9461ed5ffaf"));
 
-        assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_MAINNET, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_MAINNET, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.LITECOIN_MAINNET, "T5H7xHs9XU5uAHQaSySZysPFMGhMgGa5pQkKDv7DLHVUK8wWXAEx"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.LITECOIN_MAINNET, "T54cuK5Hd4BVTStMiw9e6oqkRsasws3pBfbJCwaQeVD74Ky5TKiy"));
 
-        assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_TESTNET, "cVdsBsrPLZsEtLxh8TQfjmdaSXDG3632zuHYBNDRDYbSvwQxwApi"));
-        assertTrue(CryptoJ.isPrivKeyValid(Network.LITECOIN_TESTNET, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.LITECOIN_TESTNET, "cVdsBsrPLZsEtLxh8TQfjmdaSXDG3632zuHYBNDRDYbSvwQxwApi"));
+        assertTrue(CryptoJ.isPrivateKeyValid(Network.LITECOIN_TESTNET, "cPbrsHRmP4XE2ruXouVRMuEsf1PheKtJegVLLVDGfEEBUZQjyz45"));
 
         // invalid key - containing invalid character
-        assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7IcqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
+        assertFalse(CryptoJ.isPrivateKeyValid(Network.BITCOIN_MAINNET, "L3zJJbXrwr7Gk5Jbp7IcqXgVYmhhyBidwnoA5axHRffjKqfZc4Gq"));
         // invalid key - checksum validation failed
-        assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3ChNw3VArUV2QMBuiZkNW7cqJqReC"));
+        assertFalse(CryptoJ.isPrivateKeyValid(Network.BITCOIN_MAINNET, "Kx7rDkP5ESZnhXVjBSUsRP3ChNw3VArUV2QMBuiZkNW7cqJqReC"));
         // invalid key - invalid network
-        assertFalse(CryptoJ.isPrivKeyValid(Network.BITCOIN_MAINNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
+        assertFalse(CryptoJ.isPrivateKeyValid(Network.BITCOIN_MAINNET, "cVwwGkHKb49YnUd2MKRgGXkbNi94U3BfFXTKxNDhwt2xYg4KGCaa"));
 
         // TODO: ... add some test cases
     }

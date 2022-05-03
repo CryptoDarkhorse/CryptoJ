@@ -25,12 +25,10 @@ import org.bitcoinj.wallet.UnreadableWalletException;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.jcajce.provider.digest.SHA512;
 import org.bouncycastle.math.ec.ECPoint;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
@@ -49,7 +47,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 
@@ -529,7 +526,7 @@ public class CryptoJ {
         }
 
         // internal validation
-        if (isPrivKeyValid(network, privKey) == false) {
+        if (isPrivateKeyValid(network, privKey) == false) {
             throw new CryptoJException("Internal validation (private key) has failed.");
         }
 
@@ -543,7 +540,7 @@ public class CryptoJ {
      * @param privateKey to be validated
      * @return true if it's valid, otherwise false
      */
-    public static boolean isPrivKeyValid(
+    public static boolean isPrivateKeyValid(
             @NonNull Network network,
             @NonNull String privateKey
     ) {
@@ -555,6 +552,14 @@ public class CryptoJ {
         }
     }
 
+    /**
+     * Parse raw private key into {@link ECKey} object
+     *
+     * @param network network
+     * @param privateKey to be parsed
+     * @return {@link ECKey} object instance
+     * @throws CryptoJException if input is invalid, wrong format, or parsing has failed
+     */
     public static ECKey parsePrivateKey(
             @NonNull Network network,
             @NonNull String privateKey
@@ -582,9 +587,12 @@ public class CryptoJ {
         }
     }
 
+
     // SECTION - PUBLIC KEY //
+
     /**
      *  Extract public key from private key
+     *
      * @param network       network
      * @param privateKey    private key
      * @return extracted public key
@@ -601,13 +609,13 @@ public class CryptoJ {
     // SECTION - SIGN & VERIFY A MESSAGE //
 
     /**
-     * Signs any raw text message using specific private key.
+     * Sign any raw text message using specific private key.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
      * @param network    network
      * @param rawMessage to be signed
      * @param privateKey to use to sign the raw message
-     * @return Signature of message
+     * @return signature of message
      */
     public static String signMessage(
             @NonNull Network network,
@@ -619,13 +627,14 @@ public class CryptoJ {
     }
 
     /**
-     * Verifies signature of a raw message, if the raw message was signed using private key of specific address.
+     * Verify signature of a raw message, if the raw message was signed by
+     * a private key associated to the specific address.
      * See {@link Demo_2_SignAndVerifyMessage}
      *
      * @param network    network
-     * @param rawMessage a raw text message which was signed by private key
-     * @param signature  signature provided by address owner
-     * @param address    which private key signed the raw message and created the signature
+     * @param rawMessage a raw text message which was signed by a private key
+     * @param signature  signature provided by the private key owner
+     * @param address    which is associated to the private key which signed the raw message and created the signature
      * @return true if signature is valid, otherwise false
      */
     public static boolean verifyMessage(
@@ -656,47 +665,15 @@ public class CryptoJ {
 
     // SECTION - ENCRYPT & DECRYPT A MESSAGE //
 
-    private static byte[] append(byte[] a, byte[] b) {
-        byte[] res = new byte[a.length + b.length];
-        int p = 0;
-        for (int i = 0; i < a.length; i++)
-            res[p++] = a[i];
-        for (int i = 0; i < b.length; i++)
-            res[p++] = b[i];
-        return res;
-    }
-
-    private static byte[] append(byte[] a, byte[] b, byte[] c) {
-        byte[] res = new byte[a.length + b.length + c.length];
-        int p = 0;
-        for (int i = 0; i < a.length; i++)
-            res[p++] = a[i];
-        for (int i = 0; i < b.length; i++)
-            res[p++] = b[i];
-        for (int i = 0; i < c.length; i++)
-            res[p++] = c[i];
-        return res;
-    }
-
-    private static boolean arrayEquals(byte[] a, byte[] b) {
-        if (a.length != b.length) return false;
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] != b[i]) return false;
-        }
-        return true;
-    }
-
     /**
-     * Encrypts any raw text message using specific private key.
+     * Encrypt any raw text message using specific public key.
      * See {@link Demo_3_EncryptAndDecryptMessage}
      *
-     * @param network    network
      * @param rawMessage to be encrypted
      * @param publicKey  to use to encrypt the raw message
      * @return encrypted message
      */
     public static String encryptMessage(
-            @NonNull Network network,
             @NonNull String rawMessage,
             @NonNull String publicKey
     ) throws CryptoJException {
@@ -768,14 +745,14 @@ public class CryptoJ {
     }
 
     /**
-     * Decrypts previously encrypted message, using an address which is associated
-     * to private key which has encrypted the original message.
+     * Decrypts previously encrypted message by the private key associated
+     * to public key which has encrypted the original message.
      * See {@link Demo_3_EncryptAndDecryptMessage}
      *
      * @param network          network
-     * @param encryptedMessage which was encrypted using private key associated to the address
-     * @param privateKey       which is associated to private key which has encrypted the original message
-     * @return the original message
+     * @param encryptedMessage which was encrypted using a public key assiciated to the private key
+     * @param privateKey       which is associated to a public key which has encrypted original raw message
+     * @return the original raw message
      */
     public static String decryptMessage(
             @NonNull Network network,
@@ -905,7 +882,7 @@ public class CryptoJ {
                 throw new CryptoJException("Invalid UTXO index.");
             }
             utxo.setPrivKey(utxo.getPrivKey().replace(" ", ""));
-            if (isPrivKeyValid(network, utxo.getPrivKey()) == false) {
+            if (isPrivateKeyValid(network, utxo.getPrivKey()) == false) {
                 throw new CryptoJException("Sender's private key " + utxo.getPrivKey() + " is invalid.");
             }
         }
@@ -965,7 +942,7 @@ public class CryptoJ {
             throw new CryptoJException("Invalid coin and network combination.");
         }
         fromPrivateKey = fromPrivateKey.replace(" ", "");
-        if (isPrivKeyValid(network, fromPrivateKey) == false) {
+        if (isPrivateKeyValid(network, fromPrivateKey) == false) {
             throw new CryptoJException("Private key is invalid.");
         }
         toAddress = toAddress.replace(" ", "");
@@ -1157,6 +1134,36 @@ public class CryptoJ {
         }
         byte[] byteArray = TransactionEncoder.signMessage(rawTransaction, chainId, credentials);
         return Numeric.toHexString(byteArray);
+    }
+
+    private static byte[] append(byte[] a, byte[] b) {
+        byte[] res = new byte[a.length + b.length];
+        int p = 0;
+        for (int i = 0; i < a.length; i++)
+            res[p++] = a[i];
+        for (int i = 0; i < b.length; i++)
+            res[p++] = b[i];
+        return res;
+    }
+
+    private static byte[] append(byte[] a, byte[] b, byte[] c) {
+        byte[] res = new byte[a.length + b.length + c.length];
+        int p = 0;
+        for (int i = 0; i < a.length; i++)
+            res[p++] = a[i];
+        for (int i = 0; i < b.length; i++)
+            res[p++] = b[i];
+        for (int i = 0; i < c.length; i++)
+            res[p++] = c[i];
+        return res;
+    }
+
+    private static boolean arrayEquals(byte[] a, byte[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != b[i]) return false;
+        }
+        return true;
     }
 
 }
