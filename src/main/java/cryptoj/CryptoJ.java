@@ -555,7 +555,7 @@ public class CryptoJ {
     /**
      * Parse raw private key into {@link ECKey} object
      *
-     * @param network network
+     * @param network    network
      * @param privateKey to be parsed
      * @return {@link ECKey} object instance
      * @throws CryptoJException if input is invalid, wrong format, or parsing has failed
@@ -591,10 +591,10 @@ public class CryptoJ {
     // SECTION - PUBLIC KEY //
 
     /**
-     *  Extract public key from private key
+     * Extract public key from private key
      *
-     * @param network       network
-     * @param privateKey    private key
+     * @param network    network
+     * @param privateKey private key
      * @return extracted public key
      */
     public static String getPublicKey(
@@ -698,7 +698,7 @@ public class CryptoJ {
             throw new CryptoJException("Sha-512 digest algorithm is not supported");
         }
 
-         // iv, key_e, key_m = key[0:16], key[16:32], key[32:]
+        // iv, key_e, key_m = key[0:16], key[16:32], key[32:]
         byte[] iv = Arrays.copyOfRange(key, 0, 16);
         byte[] key_e = Arrays.copyOfRange(key, 16, 32);
         byte[] key_m = Arrays.copyOfRange(key, 32, key.length);
