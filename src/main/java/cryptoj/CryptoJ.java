@@ -717,7 +717,7 @@ public class CryptoJ {
             BigDecimal amount = txReceiver.getAmount().stripTrailingZeros();
             int scale = coin.getScale();
             RoundingMode rm = RoundingMode.DOWN;
-            if (amount.setScale(scale, rm).compareTo(amount) == 0) { // check if amount has valid scale
+            if (amount.setScale(scale, rm).compareTo(amount) != 0) { // check if amount has valid scale
                 throw new CryptoJException("Receiver's amount scale is invalid.");
             }
             amount = amount.setScale(scale, rm);
