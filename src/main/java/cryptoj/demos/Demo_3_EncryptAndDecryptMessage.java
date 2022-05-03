@@ -19,6 +19,7 @@ public class Demo_3_EncryptAndDecryptMessage {
         int derivationIndex = 0;
         String address = CryptoJ.generateAddress(network, addressType, xPub, derivationIndex);
         String privateKey = CryptoJ.generatePrivateKey(network, addressType, mnemonic, derivationIndex);
+        String publicKey = CryptoJ.getPublicKey(network, privateKey);
 
         System.out.println("Network = " + network.getName());
         System.out.println("AddressType = " + addressType.getName());
@@ -27,16 +28,17 @@ public class Demo_3_EncryptAndDecryptMessage {
         System.out.println("derivationIndex = " + derivationIndex);
         System.out.println("address = " + address);
         System.out.println("privateKey = " + privateKey);
+        System.out.println("publicKey = " + publicKey);
 
         System.out.println("\n\n");
 
         String rawMessage = "Hello world, this is CryptoJ!";
         System.out.println("rawMessage = " + rawMessage);
 
-        String encryptedMessage = CryptoJ.encryptMessage(network, rawMessage, privateKey);
-        System.out.println("encryptedMessage = " + rawMessage);
+        String encryptedMessage = CryptoJ.encryptMessage(network, rawMessage, publicKey);
+        System.out.println("encryptedMessage = " + encryptedMessage);
 
-        String decryptedMessage = CryptoJ.decryptMessage(network, encryptedMessage, address);
+        String decryptedMessage = CryptoJ.decryptMessage(network, encryptedMessage, privateKey);
         System.out.println("decryptedMessage = " + decryptedMessage);
 
         System.out.println("decryptedMessage.equals(rawMessage) = " + decryptedMessage.equals(rawMessage));

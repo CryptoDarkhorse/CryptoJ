@@ -22,6 +22,16 @@ import org.bitcoinj.script.ScriptPattern;
 import org.bitcoinj.wallet.DeterministicKeyChain;
 import org.bitcoinj.wallet.DeterministicSeed;
 import org.bitcoinj.wallet.UnreadableWalletException;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.jcajce.provider.digest.SHA512;
+import org.bouncycastle.math.ec.ECPoint;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Bool;
@@ -33,11 +43,14 @@ import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.utils.Numeric;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.security.SecureRandom;
-import java.security.SignatureException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.util.*;
 
 /**
@@ -534,27 +547,54 @@ public class CryptoJ {
             @NonNull Network network,
             @NonNull String privateKey
     ) {
+        try {
+            parsePrivateKey(network, privateKey);
+            return true;
+        } catch (CryptoJException e) {
+            return false;
+        }
+    }
+
+    public static ECKey parsePrivateKey(
+            @NonNull Network network,
+            @NonNull String privateKey
+    ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
         if (network.getCoinType() == CoinType.ETH) {
             privateKey = privateKey.toLowerCase();
-            if (!privateKey.startsWith("0x")) return false;
+            if (!privateKey.startsWith("0x")) {
+                throw new CryptoJException("Ethereum private key must starts with \"0x\"");
+            }
 
             try {
                 byte[] privKeyBytes = Utils.HEX.decode(privateKey.substring(2));
-                ECKey.fromPrivate(privKeyBytes);
-                return true;
+                return ECKey.fromPrivate(privKeyBytes);
             } catch (IllegalArgumentException ex) {
-                return false;
+                throw new CryptoJException(ex.getMessage());
             }
         }
 
         try {
-            DumpedPrivateKey.fromBase58(params, privateKey);
-            return true;
+            return DumpedPrivateKey.fromBase58(params, privateKey).getKey();
         } catch (AddressFormatException ex) {
-            return false;
+            throw new CryptoJException(ex.getMessage());
         }
+    }
+
+    // SECTION - PUBLIC KEY //
+    /**
+     *  Extract public key from private key
+     * @param network       network
+     * @param privateKey    private key
+     * @return extracted public key
+     */
+    public static String getPublicKey(
+            @NonNull Network network,
+            @NonNull String privateKey
+    ) throws CryptoJException {
+        ECKey key = parsePrivateKey(network, privateKey);
+        return key.getPublicKeyAsHex();
     }
 
 
@@ -574,26 +614,7 @@ public class CryptoJ {
             @NonNull String rawMessage,
             @NonNull String privateKey
     ) throws CryptoJException {
-        ECKey key = null;
-        if (network.getCoinType() == CoinType.ETH) {
-            privateKey = privateKey.toLowerCase();
-
-            if (!privateKey.startsWith("0x"))
-                throw new CryptoJException("Invalid private key");
-
-            try {
-                byte[] privKeyBytes = Utils.HEX.decode(privateKey.substring(2));
-                key = ECKey.fromPrivate(privKeyBytes);
-            } catch (IllegalArgumentException ex) {
-                throw new CryptoJException("Invalid private key");
-            }
-        } else {
-            try {
-                key = DumpedPrivateKey.fromBase58(getNetworkParams(network), privateKey).getKey();
-            } catch (AddressFormatException ex) {
-                throw new CryptoJException("Invalid private key");
-            }
-        }
+        ECKey key = parsePrivateKey(network, privateKey);
         return key.signMessage(rawMessage);
     }
 
@@ -635,21 +656,115 @@ public class CryptoJ {
 
     // SECTION - ENCRYPT & DECRYPT A MESSAGE //
 
+    private static byte[] append(byte[] a, byte[] b) {
+        byte[] res = new byte[a.length + b.length];
+        int p = 0;
+        for (int i = 0; i < a.length; i++)
+            res[p++] = a[i];
+        for (int i = 0; i < b.length; i++)
+            res[p++] = b[i];
+        return res;
+    }
+
+    private static byte[] append(byte[] a, byte[] b, byte[] c) {
+        byte[] res = new byte[a.length + b.length + c.length];
+        int p = 0;
+        for (int i = 0; i < a.length; i++)
+            res[p++] = a[i];
+        for (int i = 0; i < b.length; i++)
+            res[p++] = b[i];
+        for (int i = 0; i < c.length; i++)
+            res[p++] = c[i];
+        return res;
+    }
+
+    private static boolean arrayEquals(byte[] a, byte[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != b[i]) return false;
+        }
+        return true;
+    }
+
     /**
      * Encrypts any raw text message using specific private key.
      * See {@link Demo_3_EncryptAndDecryptMessage}
      *
      * @param network    network
      * @param rawMessage to be encrypted
-     * @param privateKey to use to encrypt the raw message
+     * @param publicKey  to use to encrypt the raw message
      * @return encrypted message
      */
     public static String encryptMessage(
             @NonNull Network network,
             @NonNull String rawMessage,
-            @NonNull String privateKey
+            @NonNull String publicKey
     ) throws CryptoJException {
-        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
+        byte[] magic = "BIE1".getBytes();
+
+        ECKey pubKey = ECKey.fromPublicOnly(Utils.HEX.decode(publicKey));
+
+        // ephemeral = ECPrivkey.generate_random_key()
+        ECKey ephemeral = new ECKey(new SecureRandom());
+
+        // ecdh_key = (self * ephemeral.secret_scalar).get_public_key_bytes(compressed=True)
+        byte[] ecdh_key = pubKey.getPubKeyPoint().multiply(ephemeral.getPrivKey()).getEncoded(true);
+
+        // key = hashlib.sha512(ecdh_key).digest()
+        byte[] key = null;
+        try {
+            MessageDigest digset = MessageDigest.getInstance("SHA-512");
+            digset.reset();
+            digset.update(ecdh_key);
+            key = digset.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoJException("Sha-512 digest algorithm is not supported");
+        }
+
+         // iv, key_e, key_m = key[0:16], key[16:32], key[32:]
+        byte[] iv = Arrays.copyOfRange(key, 0, 16);
+        byte[] key_e = Arrays.copyOfRange(key, 16, 32);
+        byte[] key_m = Arrays.copyOfRange(key, 32, key.length);
+
+        // ciphertext = aes_encrypt_with_iv(key_e, iv, message)
+        ParametersWithIV keyWithIv = new ParametersWithIV(new KeyParameter(key_e), iv);
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
+        cipher.init(true, keyWithIv);
+        byte[] plainBytes = rawMessage.getBytes();
+        byte[] encryptedBytes = new byte[cipher.getOutputSize(plainBytes.length)];
+
+        byte[] ciphertext = null;
+        try {
+            int length1 = cipher.processBytes(plainBytes, 0, plainBytes.length, encryptedBytes, 0);
+            int length2 = cipher.doFinal(encryptedBytes, length1);
+            ciphertext = Arrays.copyOf(encryptedBytes, length1 + length2);
+        } catch (InvalidCipherTextException e) {
+            throw new CryptoJException("Failed to encrypt message by AES algorithm");
+        }
+
+        // ephemeral_pubkey = ephemeral.get_public_key_bytes(compressed=True)
+        byte[] ephemeral_pubkey = ephemeral.getPubKey();
+
+        // encrypted = magic + ephemeral_pubkey + ciphertext
+        byte[] encryped = append(magic, ephemeral_pubkey, ciphertext);
+
+        // mac = hmac_oneshot(key_m, encrypted, hashlib.sha256)
+        Mac sha256HMAC = null;
+        try {
+            sha256HMAC = Mac.getInstance("HmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoJException("HmacSHA256 is not supported");
+        }
+
+        try {
+            sha256HMAC.init(new SecretKeySpec(key_m, "HmacSHA256"));
+        } catch (InvalidKeyException e) {
+            throw new CryptoJException("HmacSHA256 is not supported");
+        }
+        byte[] mac = sha256HMAC.doFinal(encryped);
+
+        // return base64.b64encode(encrypted + mac)
+        return Base64.getEncoder().encodeToString(append(encryped, mac));
     }
 
     /**
@@ -659,15 +774,100 @@ public class CryptoJ {
      *
      * @param network          network
      * @param encryptedMessage which was encrypted using private key associated to the address
-     * @param address          which is associated to private key which has encrypted the original message
+     * @param privateKey       which is associated to private key which has encrypted the original message
      * @return the original message
      */
     public static String decryptMessage(
             @NonNull Network network,
             @NonNull String encryptedMessage,
-            @NonNull String address
+            @NonNull String privateKey
     ) throws CryptoJException {
-        throw new UnsupportedOperationException("Not implemented yet."); // todo implement please
+        ECKey prvKey = parsePrivateKey(network, privateKey);
+
+        byte[] magic = "BIE1".getBytes();
+
+        // encrypted = base64.b64decode(encrypted)  # type: bytes
+        byte[] encrypted = Base64.getDecoder().decode(encryptedMessage);
+
+        //if len(encrypted) < 85:
+        //raise Exception('invalid ciphertext: length')
+        if (encrypted.length < 85) {
+            throw new CryptoJException(("Invalid cipher text: length"));
+        }
+
+        //magic_found = encrypted[:4]
+        //ephemeral_pubkey_bytes = encrypted[4:37]
+        //ciphertext = encrypted[37:-32]
+        //mac = encrypted[-32:]
+        byte[] magic_found = Arrays.copyOfRange(encrypted, 0, 4);
+        byte[] ephemeral_pubkey_bytes = Arrays.copyOfRange(encrypted, 4, 37);
+        byte[] ciphertext = Arrays.copyOfRange(encrypted, 37, encrypted.length - 32);
+        byte[] mac = Arrays.copyOfRange(encrypted, encrypted.length - 32, encrypted.length);
+
+        //if magic_found != magic:
+        //raise Exception('invalid ciphertext: invalid magic bytes')
+        if (!arrayEquals(magic_found, magic)) {
+            throw new CryptoJException("invalid ciphertext: invalid magic bytes");
+        }
+
+        //try:
+        //ephemeral_pubkey = ECPubkey(ephemeral_pubkey_bytes)
+        //except InvalidECPointException as e:
+        //raise Exception('invalid ciphertext: invalid ephemeral pubkey') from e
+        ECKey pubKey = ECKey.fromPublicOnly(ephemeral_pubkey_bytes);
+        ECPoint ephemeral_pubkey = pubKey.getPubKeyPoint();
+
+        //ecdh_key = (ephemeral_pubkey * self.secret_scalar).get_public_key_bytes(compressed=True)
+        byte[] ecdh_key = ephemeral_pubkey.multiply(prvKey.getPrivKey()).getEncoded(true);
+
+        //key = hashlib.sha512(ecdh_key).digest()
+        byte[] key = null;
+        try {
+            MessageDigest digset = MessageDigest.getInstance("SHA-512");
+            digset.reset();
+            digset.update(ecdh_key);
+            key = digset.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoJException("Sha-512 digest algorithm is not supported");
+        }
+
+        //iv, key_e, key_m = key[0:16], key[16:32], key[32:]
+        byte[] iv = Arrays.copyOfRange(key, 0, 16);
+        byte[] key_e = Arrays.copyOfRange(key, 16, 32);
+        byte[] key_m = Arrays.copyOfRange(key, 32, key.length);
+
+        //if mac != hmac_oneshot(key_m, encrypted[:-32], hashlib.sha256):
+        //raise InvalidPassword()
+        Mac sha256HMAC = null;
+        try {
+            sha256HMAC = Mac.getInstance("HmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoJException("HmacSHA256 is not supported");
+        }
+
+        try {
+            sha256HMAC.init(new SecretKeySpec(key_m, "HmacSHA256"));
+        } catch (InvalidKeyException e) {
+            throw new CryptoJException("HmacSHA256 is not supported");
+        }
+        byte[] macChecked = sha256HMAC.doFinal(Arrays.copyOf(encrypted, encrypted.length - 32));
+        if (!arrayEquals(mac, macChecked)) {
+            throw new CryptoJException("Hash check is failed");
+        }
+
+        //return aes_decrypt_with_iv(key_e, iv, ciphertext)
+        ParametersWithIV keyWithIv = new ParametersWithIV(new KeyParameter(key_e), iv);
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
+        cipher.init(false, keyWithIv);
+        byte[] decryptedBytes = new byte[cipher.getOutputSize(ciphertext.length)];
+
+        try {
+            int length1 = cipher.processBytes(ciphertext, 0, ciphertext.length, decryptedBytes, 0);
+            int length2 = cipher.doFinal(decryptedBytes, length1);
+            return new String(decryptedBytes, 0, length1 + length2, Charset.defaultCharset());
+        } catch (InvalidCipherTextException e) {
+            throw new CryptoJException("Failed to encrypt message by AES algorithm");
+        }
     }
 
 
