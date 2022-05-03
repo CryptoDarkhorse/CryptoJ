@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -348,7 +349,7 @@ public class TestMain {
     @Test
     @DisplayName("Test transaction")
     void testBTCTransaction() {
-        final double transactionFee = 0.00000225;
+        final BigDecimal transactionFee = new BigDecimal("0.00000225");
         UTXObject[] utxos;
         TXReceiver[] receivers;
         String signedTx = null;
@@ -368,8 +369,8 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.0001),
-                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.00073 - 0.0001 - transactionFee) // change
+                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", new BigDecimal("0.0001")),
+                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", (new BigDecimal("0.00073").subtract(new BigDecimal("0.0001"))).subtract(transactionFee)) // change
         };
 
         try {
@@ -395,8 +396,8 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.0001),
-                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", 0.001 - 0.0001 - transactionFee) // change
+                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", new BigDecimal("0.0001")),
+                new TXReceiver("mxJsqhDcZh2UCKrcVz7ZvMB1y4yJ5iMMxA", (new BigDecimal("0.001").subtract(new BigDecimal("0.0001"))).subtract(transactionFee)) // change
         };
 
         try {
@@ -422,8 +423,8 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", 0.000004),
-                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00001 - 0.000004 - transactionFee) // change
+                new TXReceiver("n1ZfpnjSugDUFe2wc3sw1LrwRYQ9N1hf7y", new BigDecimal("0.000004")),
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", (new BigDecimal("0.00001").subtract(new BigDecimal("0.000004"))).subtract(transactionFee)) // change
         };
 
         try {
@@ -449,8 +450,8 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004),
-                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", 0.00008859 - 0.00004 - transactionFee) // change
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", new BigDecimal("0.000004")),
+                new TXReceiver("tb1q8n8cgzvje429hgygc64c3u0w77pyj7cj9fjfln", (new BigDecimal("0.00008859").subtract(new BigDecimal("0.00004"))).subtract(transactionFee)) // change
         };
 
         try {
@@ -489,7 +490,7 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", 0.00004000) // change
+                new TXReceiver("tb1q5ec53yn0y2l8ghe9w7n5lvp76zkshf899zft2p", new BigDecimal("0.000004")) // change
         };
 
         try {
@@ -525,7 +526,7 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12499526),
+                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", new BigDecimal("0.12499526")),
         };
 
         try {
@@ -548,7 +549,7 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj", 0.12499326),
+                new TXReceiver("tltc1qhuukwzakzyqr0ekypxd9z8yz28t7rf5txyvnfj", new BigDecimal("0.12499326")),
         };
 
         try {
@@ -571,7 +572,7 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9", 0.12499126),
+                new TXReceiver("tltc1qycv90vfra7z65zk0rzv9dzymy0fzulsxsxcxp9", new BigDecimal("0.12499126")),
         };
 
         try {
@@ -594,7 +595,7 @@ public class TestMain {
         };
 
         receivers = new TXReceiver[]{
-                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", 0.12498926),
+                new TXReceiver("n4ZF3QSdqyENX6nH7h3EUejMixx2qKXc7t", new BigDecimal("0.12498926")),
         };
 
         try {

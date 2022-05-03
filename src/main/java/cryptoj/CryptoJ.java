@@ -307,7 +307,7 @@ public class CryptoJ {
             @NonNull Network network,
             @NonNull AddressType addrType,
             @NonNull String xPub,
-            @NonNull int derivationIndex
+            @NonNull Integer derivationIndex
     ) throws CryptoJException {
 
         if (isXPubValid(network, xPub) == false) {
@@ -429,7 +429,7 @@ public class CryptoJ {
             @NonNull Network network,
             @NonNull AddressType addrType,
             @NonNull String mnemonic,
-            @NonNull int derivationIndex
+            @NonNull Integer derivationIndex
     ) throws CryptoJException {
         return generatePrivateKey(
                 network,
@@ -456,7 +456,7 @@ public class CryptoJ {
             @NonNull AddressType addrType,
             @NonNull String mnemonic,
             String passphrase,
-            @NonNull int derivationIndex
+            @NonNull Integer derivationIndex
     ) throws CryptoJException {
 
         if (addrType.getPurpose() < 0) {
