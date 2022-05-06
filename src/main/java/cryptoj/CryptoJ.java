@@ -1030,7 +1030,7 @@ public class CryptoJ {
     ) throws CryptoJException {
         NetworkParameters params = getNetworkParams(network);
 
-        Context.getOrCreate(params);
+        Context context = new Context(params);
 
         // Init transaction
         Transaction trans = new Transaction(params);
